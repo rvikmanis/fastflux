@@ -10,7 +10,8 @@ module.exports = {
     libraryTarget: "var"
   },
   externals: [{
-    react: "React"
+    react: "React",
+    "sockjs-client": "SockJS"
   }],
   plugins: [new webpack.optimize.UglifyJsPlugin()]
 };

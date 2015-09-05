@@ -1,6 +1,6 @@
 const invariant = require("invariant");
 const assign = require("object-assign");
-const FluxDispatcher = require("./FluxDispatcher");
+const FluxDispatcher = require("./lib/FluxDispatcher");
 
 const Store = require("./Store");
 const StoreSubscription = require("./mixins/StoreSubscription");
@@ -56,6 +56,10 @@ class Application {
     delete this._stores[id];
   }
 
+  hasStore(id) {
+    return this._stores.hasOwnProperty(id);
+  }
+
   getStore(id) {
     invariant(
       this._stores[id],
@@ -67,6 +71,10 @@ class Application {
 
   addCallback(id, callback) {
     return this._dispatcher.register(id, callback);
+  }
+
+  hasCallback(id) {
+    return this._dispatcher._callbacks.hasOwnProperty(id);
   }
 
   removeCallback(id) {

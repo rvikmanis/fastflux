@@ -6,7 +6,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var invariant = require("invariant");
 var assign = require("object-assign");
-var FluxDispatcher = require("./FluxDispatcher");
+var FluxDispatcher = require("./lib/FluxDispatcher");
 
 var Store = require("./Store");
 var StoreSubscription = require("./mixins/StoreSubscription");
@@ -63,6 +63,10 @@ var Application = (function () {
     delete this._stores[id];
   };
 
+  Application.prototype.hasStore = function hasStore(id) {
+    return this._stores.hasOwnProperty(id);
+  };
+
   Application.prototype.getStore = function getStore(id) {
     invariant(this._stores[id], 'Application.getStore(id): `%s` does not map to a registered store.', id);
     return this._stores[id];
@@ -70,6 +74,10 @@ var Application = (function () {
 
   Application.prototype.addCallback = function addCallback(id, callback) {
     return this._dispatcher.register(id, callback);
+  };
+
+  Application.prototype.hasCallback = function hasCallback(id) {
+    return this._dispatcher._callbacks.hasOwnProperty(id);
   };
 
   Application.prototype.removeCallback = function removeCallback(id) {

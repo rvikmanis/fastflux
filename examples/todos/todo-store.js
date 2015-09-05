@@ -28,7 +28,7 @@ const state = {
       this.items.get(key).merge(item)
     );
   }
-}
+};
 
 export default class TodoStore extends Store {
   getState() {
@@ -62,7 +62,7 @@ export default class TodoStore extends Store {
     [SAVE](msg) {
       if(state.editing !== null) {
         if(msg.text && msg.text.trim() !== "") {
-          state.items = state.mergeItem(state.editing, {text: msg.text});;
+          state.items = state.mergeItem(state.editing, {text: msg.text});
         }
         state.editing = null;
         this.emitChange();
