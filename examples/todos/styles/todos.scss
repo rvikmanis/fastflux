@@ -1,0 +1,153 @@
+$light-hi: #d7d4d0;
+$superlight-hi: lighten($light-hi, 10%);
+$superlight-text: darken($light-hi, 0%);
+$normal-text: darken($superlight-text, 40%);
+$light-text: lighten($normal-text, 15%);
+$yellow: #FFFF99;
+$orange: #FF9900;
+$hover-text: #0066FF;
+$success-text: #00CC66;
+$danger-text: #F15D5D;
+$todos-width: 60rem;
+$padding-v: 0.5rem;
+$padding-h: 0.35rem;
+$border-w: 0.1rem;
+$inner-width: $todos-width - ($padding-h * 2) - ($border-w * 2);
+$inner-nb-width: $inner-width + ($border-w * 2);
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-family: "Helvetica", "Arial", "Verdana", sans-serif;
+  color: $normal-text;
+}
+
+.todos {
+  margin: 2rem auto;
+  width: $todos-width;
+  border: $border-w solid $light-hi;
+  position: relative;
+
+  ul.todo-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .todo-input {
+    .todo-input-field {
+      border: $border-w solid $light-hi;
+      width: $inner-width - ($padding-h * 2) - $border-w;
+      outline: none;
+      margin: 0;
+      padding: ($padding-v * 2) $padding-h;
+      font-size: 1.5rem;
+      &.error {
+        border-color: lighten($danger-text, 20%) !important;
+      }
+    }
+  }
+
+  .todo-controls, .todo-line {
+    padding: $padding-v $padding-h;
+  }
+
+  .todo-controls .todo-input-field:focus {
+    border-color: lighten($hover-text, 20%);
+  }
+
+  .todo-btn-clear-done {
+    padding: $padding-v $padding-h;
+    background: transparent !important;
+    border: 0 !important;
+    margin-top: $border-w * 6;
+    font-size: 1.25rem;
+    outline: none;
+    color: $normal-text;
+    &:hover {
+      color: $danger-text;
+    }
+    &:disabled {
+      color: $superlight-text;
+      opacity: 0.5;
+    }
+  }
+
+  .todo-input-error {
+    color: $danger-text;
+    font-size: 1.2rem;
+    padding: $padding-v $padding-h;
+    position: absolute;
+    bottom: $padding-v * -1.25;
+    right: $padding-h * 2;
+  }
+
+  .todo-line .todo-input {
+    .todo-input-field {
+      border-color: lighten($orange, 20%) !important;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+      border-bottom-width: $border-w * 2;
+      padding-left: 4rem + ($border-w * 10.5);
+      width: $inner-width - ($padding-h * 2) - ($border-w * 4) - 4rem;
+    }
+  }
+
+  .todo-item {
+    margin-top: $padding-v;
+    border-bottom: $border-w solid $superlight-hi;
+    padding: ($padding-v * 0.30) 0;
+    font-size: 1.5rem;
+    color: $normal-text;
+    button {
+      border: 0;
+      background: transparent;
+      height: 2.4rem;
+      outline: none;
+      vertical-align: top;
+      margin: 0 $border-w;
+      color: $superlight-hi;
+      &:hover {
+        color: $hover-text !important;
+      }
+    }
+    &:hover button {
+      color: lighten($light-text, 15%);
+    }
+
+    .todo-btn-done {
+      margin-right: 2rem;
+    }
+
+    .todo-text {
+      width: $todos-width - (2rem * 7);
+      overflow: hidden;
+      min-height: 1.8em;
+      display: inline-block;
+      margin-right: 2rem;
+      line-height: 2.4rem;
+    }
+
+    .todo-btn-delete:hover {
+      color: $danger-text !important;
+    }
+  }
+
+  .todo-line.done {
+    .todo-item {
+      .todo-btn-done {
+        color: $success-text !important;
+      }
+
+      .todo-text {
+        text-decoration: line-through;
+        color: $success-text;
+      }
+
+    }
+  }
+
+}
