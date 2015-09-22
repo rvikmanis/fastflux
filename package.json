@@ -1,6 +1,6 @@
 {
   "name": "fastflux",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Flux architecture implementation",
   "main": "dist-node/index.js",
   "author": "Rudolfs Vikmanis <rudolfs.vikmanis@gmail.com> (https://github.com/rvikmanis)",
