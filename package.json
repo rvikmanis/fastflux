@@ -1,12 +1,15 @@
 {
   "name": "fastflux",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "Flux architecture implementation",
   "main": "dist-node/index.js",
-  "author": "Rudolfs Vikmanis (github.com/rvikmanis)",
+  "author": "Rudolfs Vikmanis <rudolfs.vikmanis@gmail.com> (https://github.com/rvikmanis)",
   "license": "MIT",
   "dependencies": {
-    "react": "^0.13.3"
+    "invariant": "^2.1.0",
+    "object-assign": "^4.0.1",
+    "react": "^0.13.3",
+    "sockjs-client": "^1.0.3"
   },
   "devDependencies": {
     "babel": "^5.6.4",
@@ -20,10 +23,8 @@
     "gulp-babel": "^5.1.0",
     "gulp-util": "^3.0.5",
     "immutable": "^3.7.5",
-    "invariant": "^2.1.0",
     "node-libs-browser": "^0.5.2",
     "node-sass": "^3.2.0",
-    "object-assign": "^4.0.1",
     "sass-loader": "^1.0.2",
     "style-loader": "^0.12.3",
     "webpack": "^1.9.11",

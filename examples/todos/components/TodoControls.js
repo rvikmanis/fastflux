@@ -14,6 +14,10 @@ class TodoControls extends React.Component {
     error: null
   };
 
+  static defaultProps = {
+    todos: {doneCount: 0}
+  };
+
   componentWillReceiveProps(props) {
     if(props.todos.success)
       this.setState({text: ""}, actions.clearInputStatus);
@@ -23,11 +27,13 @@ class TodoControls extends React.Component {
 
     else
       this.setState({error: null});
+
+    if(props.todos.editing === null)
+      this.refs.todoInput.focus();
   }
 
   changeText(event) {
-    this.setState({text: event.target.value});
-    actions.clearInputStatus();
+    this.setState({text: event.target.value}, actions.clearInputStatus);
   }
 
   pressKey(event) {
@@ -43,9 +49,11 @@ class TodoControls extends React.Component {
                  value={this.state.text}
                  onChange={this.changeText.bind(this)}
                  onKeyUp={this.pressKey.bind(this)}
-                 onBlur={actions.clearInputStatus} />
+                 onBlur={actions.clearInputStatus}
+                 autoFocus={true}
+                 ref="todoInput" />
       <div>
-        <button disabled={this.props.doneCount === 0}
+        <button disabled={this.props.todos.doneCount === 0}
                 type="button"
                 className="todo-btn-clear-done"
                 onClick={actions.deleteAllDone}>

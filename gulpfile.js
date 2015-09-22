@@ -11,7 +11,7 @@ gulp.task('clean', function () {
     del(['dist-web', 'dist-node']);
 });
 
-gulp.task('clean-all', ['clean'], function() {
+gulp.task('full-clean', ['clean'], function() {
     del(['node_modules']);
 });
 

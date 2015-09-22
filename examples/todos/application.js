@@ -1,10 +1,11 @@
-import {Application, MessageHistory} from "../../dist-node/index";
+import Fastflux from "../../dist-node/index";
 import TodoStore from "./todo-store";
 
-const app = new Application({
+const app = new Fastflux.Application({
   stores: {
     "todos": TodoStore
   }
 });
-MessageHistory.setUp(app);
+Fastflux.services.MessageHistory.setUp(app);
+
 export default app;

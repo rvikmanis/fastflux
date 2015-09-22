@@ -3,8 +3,12 @@ import React from "react";
 export default class TodoInput extends React.Component {
   componentDidMount() {
     if(this.props.autoFocus) {
-      React.findDOMNode(this.refs.input).focus();
+      this.focus();
     }
+  }
+
+  focus() {
+    React.findDOMNode(this.refs.input).focus();
   }
 
   render() {

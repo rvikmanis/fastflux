@@ -2,13 +2,13 @@ const invariant = require("invariant");
 const bind = require("../utils").bind;
 const Store = require("../core/Store");
 
-const STORE_KEY = "fastflux.services.SocketBridge";
+const CALLBACK_KEY = "fastflux.services.SocketBridge";
 
 module.exports = {
 
   setUp(app, config) {
     invariant(
-      !app.hasCallback(STORE_KEY),
+      !app.hasCallback(CALLBACK_KEY),
       "SocketBridge.setUp(app): socket bridge service is already enabled."
     );
 
@@ -25,7 +25,7 @@ module.exports = {
       app.dispatch(JSON.parse(e.data));
     };
 
-    app.addCallback(STORE_KEY, (payload) => {
+    app.addCallback(CALLBACK_KEY, (payload) => {
       if(config.filter.call(app, payload)) {
         socket.send(JSON.stringify(payload));
       }
@@ -34,11 +34,11 @@ module.exports = {
 
   tearDown(app) {
     invariant(
-      app.hasCallback(STORE_KEY),
+      app.hasCallback(CALLBACK_KEY),
       "SocketBridge.tearDown(app): socket bridge service is already disabled."
     );
 
-    app.removeCallback(STORE_KEY);
+    app.removeCallback(CALLBACK_KEY);
     app.getSocket().close();
     delete app.getSocket;
   }
