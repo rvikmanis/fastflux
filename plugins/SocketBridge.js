@@ -1,15 +1,16 @@
 "use strict";
 
 var invariant = require("invariant");
-var bind = require("../utils").bind;
-var Store = require("../core/Store");
+var bind = require("../lib/utils").bind;
+var Store = require("./Store");
+var SockJS = require('sockjs-client');
 
-var CALLBACK_KEY = "fastflux.services.SocketBridge";
+var CALLBACK_KEY = "fastflux.plugins.SocketBridge";
 
 module.exports = {
 
   setUp: function setUp(app, config) {
-    invariant(!app.hasCallback(CALLBACK_KEY), "SocketBridge.setUp(app): socket bridge service is already enabled.");
+    invariant(!app.hasCallback(CALLBACK_KEY), "SocketBridge.setUp(app, config): socket bridge service is already enabled.");
 
     var socket = new SockJS(config.url);
     app.getSocket = function () {
@@ -32,7 +33,7 @@ module.exports = {
   },
 
   tearDown: function tearDown(app) {
-    invariant(app.hasCallback(CALLBACK_KEY), "SocketBridge.tearDown(app): socket bridge service is already disabled.");
+    invariant(app.hasCallback(CALLBACK_KEY), "SocketBridge.tearDown(app): socket bridge service is not enabled.");
 
     app.removeCallback(CALLBACK_KEY);
     app.getSocket().close();

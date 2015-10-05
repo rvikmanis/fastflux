@@ -132,9 +132,9 @@ var _prefix = 'ID_';
  * `FlightPriceStore`.
  */
 
-var FluxDispatcher = (function () {
-  function FluxDispatcher() {
-    _classCallCheck(this, FluxDispatcher);
+var Dispatcher = (function () {
+  function Dispatcher() {
+    _classCallCheck(this, Dispatcher);
 
     this._lastID = 1;
     this._callbacks = {};
@@ -152,7 +152,7 @@ var FluxDispatcher = (function () {
    * @return {string}
    */
 
-  FluxDispatcher.prototype.register = function register(callback) {
+  Dispatcher.prototype.register = function register(callback) {
     var id = _prefix + this._lastID++;
     this._callbacks[id] = callback;
     return id;
@@ -164,7 +164,7 @@ var FluxDispatcher = (function () {
    * @param {string} id
    */
 
-  FluxDispatcher.prototype.unregister = function unregister(id) {
+  Dispatcher.prototype.unregister = function unregister(id) {
     invariant(this._callbacks[id], 'Dispatcher.unregister(...): `%s` does not map to a registered callback.', id);
     delete this._callbacks[id];
   };
@@ -177,7 +177,7 @@ var FluxDispatcher = (function () {
    * @param {array<string>} ids
    */
 
-  FluxDispatcher.prototype.waitFor = function waitFor(ids) {
+  Dispatcher.prototype.waitFor = function waitFor(ids) {
     invariant(this._isDispatching, 'Dispatcher.waitFor(...): Must be invoked while dispatching.');
     for (var ii = 0; ii < ids.length; ii++) {
       var id = ids[ii];
@@ -196,7 +196,7 @@ var FluxDispatcher = (function () {
    * @param {object} payload
    */
 
-  FluxDispatcher.prototype.dispatch = function dispatch(payload) {
+  Dispatcher.prototype.dispatch = function dispatch(payload) {
     invariant(!this._isDispatching, 'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.');
     this._startDispatching(payload);
     try {
@@ -217,7 +217,7 @@ var FluxDispatcher = (function () {
    * @return {boolean}
    */
 
-  FluxDispatcher.prototype.isDispatching = function isDispatching() {
+  Dispatcher.prototype.isDispatching = function isDispatching() {
     return this._isDispatching;
   };
 
@@ -229,7 +229,7 @@ var FluxDispatcher = (function () {
    * @internal
    */
 
-  FluxDispatcher.prototype._invokeCallback = function _invokeCallback(id) {
+  Dispatcher.prototype._invokeCallback = function _invokeCallback(id) {
     this._isPending[id] = true;
     this._callbacks[id](this._pendingPayload);
     this._isHandled[id] = true;
@@ -242,7 +242,7 @@ var FluxDispatcher = (function () {
    * @internal
    */
 
-  FluxDispatcher.prototype._startDispatching = function _startDispatching(payload) {
+  Dispatcher.prototype._startDispatching = function _startDispatching(payload) {
     for (var id in this._callbacks) {
       this._isPending[id] = false;
       this._isHandled[id] = false;
@@ -257,12 +257,12 @@ var FluxDispatcher = (function () {
    * @internal
    */
 
-  FluxDispatcher.prototype._stopDispatching = function _stopDispatching() {
+  Dispatcher.prototype._stopDispatching = function _stopDispatching() {
     this._pendingPayload = null;
     this._isDispatching = false;
   };
 
-  return FluxDispatcher;
+  return Dispatcher;
 })();
 
-module.exports = FluxDispatcher;
+module.exports = Dispatcher;

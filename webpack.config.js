@@ -2,16 +2,15 @@ var webpack = require("webpack");
 var path = require("path");
 
 module.exports = {
-  entry: "./dist-node/index.js",
+  entry: "./index.js",
   output: {
-    path: path.join(__dirname, "dist-web"),
+    path: path.join(__dirname, "dist"),
     filename: "fastflux.min.js",
     library: "Fastflux",
     libraryTarget: "var"
   },
   externals: [{
-    react: "React",
-    "sockjs-client": "SockJS"
+    react: "React"
   }],
   plugins: [new webpack.optimize.UglifyJsPlugin()]
 };

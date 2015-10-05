@@ -1,8 +1,10 @@
-export const ADD = "add-todo";
-export const EDIT = "edit-todo";
-export const SAVE = "edit-save-todo";
-export const DELETE = "delete-todo";
-export const SET_DONE = "set-todo-done";
-export const SET_UNDONE = "set-todo-undone";
-export const DELETE_ALL_DONE = "delete-all-done-todos";
-export const CLEAR_INPUT_STATUS = "clear-input-status";
+export default {
+  ADD: "add-todo",
+  EDIT: "edit-todo",
+  SAVE: "edit-save-todo",
+  DELETE: "delete-todo",
+  SET_DONE: "set-todo-done",
+  SET_UNDONE: "set-todo-undone",
+  DELETE_ALL_DONE: "delete-all-done-todos",
+  CLEAR_INPUT_STATUS: "clear-input-status"
+}

@@ -1,6 +1,6 @@
 const React = require("react");
 const assign = require("object-assign");
-const bind = require("../../utils").bind;
+const bind = require("../utils").bind;
 
 module.exports = {
 
@@ -24,7 +24,7 @@ module.exports = {
 
       componentWillUnmount() {
         storeIds
-          .map(app.getStore)
+          .map(bind(app.getStore, app))
           .forEach(store => store.unlisten(this.onStoreChange));
       }
 

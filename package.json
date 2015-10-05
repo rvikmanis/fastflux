@@ -2,14 +2,13 @@
   "name": "fastflux",
   "version": "0.1.1",
   "description": "Flux architecture implementation",
-  "main": "dist-node/index.js",
+  "main": "index.js",
   "author": "Rudolfs Vikmanis <rudolfs.vikmanis@gmail.com> (https://github.com/rvikmanis)",
   "license": "MIT",
   "dependencies": {
     "invariant": "^2.1.0",
     "object-assign": "^4.0.1",
-    "react": "^0.13.3",
-    "sockjs-client": "^1.0.3"
+    "react": "^0.13.3"
   },
   "devDependencies": {
     "babel": "^5.6.4",

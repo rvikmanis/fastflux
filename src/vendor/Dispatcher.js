@@ -129,7 +129,7 @@ var _prefix = 'ID_';
  * registered callbacks in order: `CountryStore`, `CityStore`, then
  * `FlightPriceStore`.
  */
-class FluxDispatcher {
+class Dispatcher {
   constructor() {
     this._lastID = 1;
     this._callbacks = {};
@@ -269,4 +269,4 @@ class FluxDispatcher {
   }
 }
 
-module.exports = FluxDispatcher;
+module.exports = Dispatcher;
