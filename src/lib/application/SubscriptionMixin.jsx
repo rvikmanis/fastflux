@@ -28,10 +28,8 @@ module.exports = {
           .forEach(store => store.unlisten(this.onStoreChange));
       }
 
-      _onStoreChange() {
-        let update = {};
-        storeIds.forEach(id => update[id] = app.getStore(id).getState());
-        this.setState(update);
+      _onStoreChange(store) {
+        this.setState({[store.getKey()]: store.getState()});
       }
 
       render() {

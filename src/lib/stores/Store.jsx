@@ -6,8 +6,9 @@ const CHANGE = "change";
 module.exports = class Store {
 
   _emitter = new EventEmitter;
+  state = null;
 
-  constructor(app) {
+  constructor(app, key) {
     invariant(this.constructor !== Store,
               "Cannot instantiate Store. Subclass instead!");
 
@@ -21,7 +22,12 @@ module.exports = class Store {
       this._handlers[member.handlesMessageType] = member;
     });
 
+    this._key = key;
     this._app = app;
+  }
+
+  getState() {
+    return this.state;
   }
 
   onMessage(payload) {
@@ -32,26 +38,19 @@ module.exports = class Store {
   }
 
   emitChange() {
-    this._emitter.emit(CHANGE);
+    this._emitter.emit(CHANGE, this.getPublicContext());
   }
 
   wait(...args) {
     this._app.wait(...args);
   }
 
-  listen(callback) {
-    this._emitter.addListener(CHANGE, callback);
-  }
-
-  unlisten(callback) {
-    this._emitter.removeListener(CHANGE, callback);
-  }
-
   getPublicContext() {
     return {
-      listen: cb => this.listen(cb),
-      unlisten: cb => this.unlisten(cb),
-      getState: () => this.getState()
+      listen: callback => this._emitter.addListener(CHANGE, callback),
+      unlisten: callback => this._emitter.removeListener(CHANGE, callback),
+      getState: () => this.getState(),
+      getKey: () => this._key
     }
   }
 

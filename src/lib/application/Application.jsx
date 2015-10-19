@@ -4,7 +4,7 @@ const BaseDispatcher = require("../../vendor/Dispatcher");
 
 const Store = require("../stores/Store");
 const SubscriptionMixin = require("./SubscriptionMixin");
-const bind = require("../utils").bind;
+const {bind, isArray, isObjectButNotArray} = require("../utils");
 
 class _Dispatcher extends BaseDispatcher {
   register(id, callback) {
@@ -18,10 +18,34 @@ class Application {
   _dispatcher = new _Dispatcher;
   _stores = {};
 
-  constructor(stores={}) {
+  constructor(...args) {
+    invariant(args.length <= 2,
+              "Application constructor expects at most 2 args. Received %s",
+              args.length);
+
+    let plugins = [];
+    let stores = {};
+
+    const first = args[0];
+    const second = args[1];
+
+    if (isArray(first)) {
+      plugins = first;
+      if (isObjectButNotArray(second)) {
+        stores = second;
+      }
+    }
+    else if(isObjectButNotArray(first)) {
+      stores = first;
+      if (isArray(second)) {
+        plugins = second;
+      }
+    }
+
     for(let id in stores) {
       this.addStore(id, stores[id]);
     }
+    plugins.forEach(p => p.setUp(this));
   }
 
   store(id) {
@@ -32,7 +56,7 @@ class Application {
   }
 
   addStore(id, store) {
-    store = new store(this);
+    store = new store(this, id);
     invariant(store instanceof Store,
               "Wrong type: argument is not a subclass of Store");
 

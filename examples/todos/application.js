@@ -1,16 +1,13 @@
 import Immutable from "immutable";
 import {Application, Store, handler} from "../../index";
+import MessageHistory from "../../plugins/MessageHistory";
 import Messages from './messages';
-
-const app = new Application;
-export default app;
 
 const STATUS_SUCCESS = 1;
 const STATUS_ERROR_EMPTY_INPUT = 2;
 
 const Todo = Immutable.Record({text: "", done: false});
 
-@app.store("todos")
 class TodoStore extends Store {
 
   items = Immutable.List();
@@ -91,3 +88,12 @@ class TodoStore extends Store {
 
 }
 
+const plugins = [
+    MessageHistory.configure({log: true})
+];
+
+const stores = {
+  todos: TodoStore
+};
+
+export default new Application(plugins, stores);

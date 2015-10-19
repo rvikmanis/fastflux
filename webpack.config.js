@@ -2,12 +2,14 @@ var webpack = require("webpack");
 var path = require("path");
 
 module.exports = {
-  entry: "./index.js",
+  entry: {
+    "fastflux": "./browser/fastflux",
+    "plugins/fastflux-socketio-broker": "./browser/plugins/fastflux-socketio-broker",
+    "plugins/fastflux-message-history": "./browser/plugins/fastflux-message-history"
+  },
   output: {
     path: path.join(__dirname, "dist"),
-    filename: "fastflux.min.js",
-    library: "Fastflux",
-    libraryTarget: "var"
+    filename: "[name].min.js"
   },
   externals: [{
     react: "React"

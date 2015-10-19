@@ -1,25 +1,16 @@
 const invariant = require("invariant");
+const assign = require("object-assign");
 const bind = require("../lib/utils").bind;
 const Store = require("../lib/stores/Store");
+const Plugin = require('./Plugin');
 
 const STORE_KEY = "fastflux/plugins/MessageHistory";
 
-class MessageHistoryStore extends Store {
+const defaults = {
+  log: false
+};
 
-  history = [];
-
-  getState() {
-    return this.history.concat()
-  }
-
-  onMessage(payload) {
-    this.history.push([new Date, payload]);
-    this.emitChange();
-  }
-
-}
-
-module.exports =  {
+module.exports = new Plugin({
 
   setUp(app) {
     invariant(
@@ -27,7 +18,28 @@ module.exports =  {
       "Message history plugin is already enabled."
     );
 
-    app.addStore(STORE_KEY, MessageHistoryStore);
+    const options = this.options;
+
+    app.addStore(STORE_KEY, class extends Store {
+
+      history = [];
+
+      getState() {
+        return this.history.concat()
+      }
+
+      onMessage(payload) {
+        const entry = [new Date, payload];
+        this.history.push(entry);
+        this.emitChange();
+
+        if (options.log) {
+          console.log(...entry);
+        }
+      }
+
+    });
+
     app.getMessageHistory = function() {
       return this.getStore(STORE_KEY).getState();
     };
@@ -40,6 +52,8 @@ module.exports =  {
     );
     delete app.getMessageHistory;
     app.removeStore(STORE_KEY);
-  }
+  },
 
-};
+  options: defaults
+
+});

@@ -8,13 +8,7 @@ var webpackConfig = require("./webpack.config");
 var serve = require("./tools/serve");
 
 gulp.task('clean', function () {
-    del([
-      'dist',
-      'lib',
-      'plugins',
-      'vendor',
-      'index.js'
-    ]);
+  del(['dist', 'browser', 'lib', 'plugins', 'vendor', 'index.js']);
 });
 
 gulp.task('full-clean', ['clean'], function() {
@@ -27,29 +21,17 @@ gulp.task('build', function () {
         .pipe(gulp.dest("."))
 });
 
-gulp.task("webpack:build", ["build", "webpack:build-dev"], function (callback) {
+gulp.task("webpack:build", ["build"], function (callback) {
     webpack(webpackConfig, function (err, stats) {
-        if (err) throw new gutil.PluginError("webpack:build", err);
-        callback();
+      if (err) throw new gutil.PluginError("webpack:build", err);
+      gutil.log("[webpack:build]", stats.toString({
+        colors: true
+      }));
+      callback();
     });
 });
 
-gulp.task("webpack:build-dev", ["build"], function (callback) {
-    var devConfig = assign({}, webpackConfig);
-    devConfig["plugins"] = [];
-    devConfig["output"] = assign({}, webpackConfig.output);
-    devConfig["output"]["filename"] = "fastflux.js";
-
-    webpack(devConfig, function (err, stats) {
-        if (err) throw new gutil.PluginError("webpack:build-dev", err);
-        gutil.log("[webpack:build-dev]", stats.toString({
-            colors: true
-        }));
-        callback();
-    });
-});
-
-gulp.task('default', ['webpack:build']);
+gulp.task('default', ['clean', 'webpack:build']);
 
 gulp.task("watch", ["webpack:build"], function () {
     gulp.watch(["src/**/*"], ["webpack:build"]);
