@@ -322,16 +322,12 @@
 	module.exports = function Plugin(_ref) {
 	  var _this = this;
 
-	  var setUp = _ref.setUp;
-	  var tearDown = _ref.tearDown;
 	  var options = _ref.options;
 
-	  var rest = _objectWithoutProperties(_ref, ['setUp', 'tearDown', 'options']);
+	  var rest = _objectWithoutProperties(_ref, ['options']);
 
 	  _classCallCheck(this, Plugin);
 
-	  this.setUp = setUp;
-	  this.tearDown = tearDown;
 	  this.options = assign({}, options);
 	  Object.getOwnPropertyNames(rest).forEach(function (name) {
 	    _this[name] = rest[name];
@@ -341,7 +337,7 @@
 	    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
 	    options = assign({}, this.options, options);
-	    return new this.constructor(_extends({ setUp: setUp, tearDown: tearDown, options: options }, rest));
+	    return new this.constructor(_extends({ options: options }, rest));
 	  };
 	};
 

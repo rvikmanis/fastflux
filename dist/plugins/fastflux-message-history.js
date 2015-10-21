@@ -425,18 +425,11 @@
 	        break;
 	      // slower
 	      default:
-	        len = arguments.length;
-	        args = new Array(len - 1);
-	        for (i = 1; i < len; i++)
-	          args[i - 1] = arguments[i];
+	        args = Array.prototype.slice.call(arguments, 1);
 	        handler.apply(this, args);
 	    }
 	  } else if (isObject(handler)) {
-	    len = arguments.length;
-	    args = new Array(len - 1);
-	    for (i = 1; i < len; i++)
-	      args[i - 1] = arguments[i];
-
+	    args = Array.prototype.slice.call(arguments, 1);
 	    listeners = handler.slice();
 	    len = listeners.length;
 	    for (i = 0; i < len; i++)
@@ -474,7 +467,6 @@
 
 	  // Check for listener leak
 	  if (isObject(this._events[type]) && !this._events[type].warned) {
-	    var m;
 	    if (!isUndefined(this._maxListeners)) {
 	      m = this._maxListeners;
 	    } else {
@@ -596,7 +588,7 @@
 
 	  if (isFunction(listeners)) {
 	    this.removeListener(type, listeners);
-	  } else {
+	  } else if (listeners) {
 	    // LIFO order
 	    while (listeners.length)
 	      this.removeListener(type, listeners[listeners.length - 1]);
@@ -617,15 +609,20 @@
 	  return ret;
 	};
 
+	EventEmitter.prototype.listenerCount = function(type) {
+	  if (this._events) {
+	    var evlistener = this._events[type];
+
+	    if (isFunction(evlistener))
+	      return 1;
+	    else if (evlistener)
+	      return evlistener.length;
+	  }
+	  return 0;
+	};
+
 	EventEmitter.listenerCount = function(emitter, type) {
-	  var ret;
-	  if (!emitter._events || !emitter._events[type])
-	    ret = 0;
-	  else if (isFunction(emitter._events[type]))
-	    ret = 1;
-	  else
-	    ret = emitter._events[type].length;
-	  return ret;
+	  return emitter.listenerCount(type);
 	};
 
 	function isFunction(arg) {
@@ -779,16 +776,12 @@
 	module.exports = function Plugin(_ref) {
 	  var _this = this;
 
-	  var setUp = _ref.setUp;
-	  var tearDown = _ref.tearDown;
 	  var options = _ref.options;
 
-	  var rest = _objectWithoutProperties(_ref, ['setUp', 'tearDown', 'options']);
+	  var rest = _objectWithoutProperties(_ref, ['options']);
 
 	  _classCallCheck(this, Plugin);
 
-	  this.setUp = setUp;
-	  this.tearDown = tearDown;
 	  this.options = assign({}, options);
 	  Object.getOwnPropertyNames(rest).forEach(function (name) {
 	    _this[name] = rest[name];
@@ -798,7 +791,7 @@
 	    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
 	    options = assign({}, this.options, options);
-	    return new this.constructor(_extends({ setUp: setUp, tearDown: tearDown, options: options }, rest));
+	    return new this.constructor(_extends({ options: options }, rest));
 	  };
 	};
 

@@ -9,7 +9,6 @@ var config = {
   babel: {stage: 0, loose: "all", blacklist: ["es6.modules"]},
   webpack: require("./config/webpack")
 };
-var webpackConfig = require("./webpack.config");
 var serve = require("./tools/serve");
 
 gulp.task('clean', function (callback) {

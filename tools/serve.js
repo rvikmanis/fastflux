@@ -4,7 +4,7 @@ var webpack = require("webpack");
 var WebpackDevServer = require("webpack-dev-server");
 
 module.exports = function serve(logName, rootPath) {
-  return function(callback) {
+  return function() {
     var webpackConfig = {
       context: path.join(__dirname, "..", rootPath),
       entry: './index.js',
