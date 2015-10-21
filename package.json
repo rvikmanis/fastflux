@@ -2,30 +2,35 @@
   "name": "fastflux",
   "version": "0.1.4",
   "description": "Flux architecture implementation",
-  "main": "index.js",
+  "main": "./index",
   "author": "Rudolfs Vikmanis <rudolfs.vikmanis@gmail.com> (https://github.com/rvikmanis)",
   "license": "MIT",
   "dependencies": {
+    "babel-jest": "^5.3.0",
     "invariant": "^2.1.0",
+    "jest-cli": "^0.5.10",
     "object-assign": "^4.0.1",
     "react": "^0.13.3"
+  },
+  "scripts": {
+    "test": "BABEL_JEST_STAGE=0 jest"
+  },
+  "jest": {
+    "scriptPreprocessor": "<rootDir>/node_modules/babel-jest",
+    "unmockedModulePathPatterns": [
+      "<rootDir>/node_modules/react",
+      "<rootDir>/src"
+    ]
   },
   "devDependencies": {
     "babel": "^5.6.4",
     "babel-core": "^5.6.18",
     "babel-loader": "^5.3.1",
-    "css-loader": "^0.15.2",
     "del": "^1.2.0",
-    "envify": "^3.4.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^5.1.0",
     "gulp-util": "^3.0.5",
-    "immutable": "^3.7.5",
     "node-libs-browser": "^0.5.2",
-    "node-sass": "^3.2.0",
-    "sass-loader": "^1.0.2",
-    "style-loader": "^0.12.3",
-    "webpack": "^1.9.11",
-    "webpack-dev-server": "^1.10.1"
+    "webpack": "^1.9.11"
   }
 }

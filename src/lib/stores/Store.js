@@ -1,6 +1,5 @@
 const invariant = require("invariant");
 const EventEmitter = require("events").EventEmitter;
-const assign = require("object-assign");
 
 const CHANGE = "change";
 module.exports = class Store {

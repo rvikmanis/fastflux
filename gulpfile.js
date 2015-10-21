@@ -6,57 +6,40 @@ var babel = require('gulp-babel');
 var del = require("del");
 
 var config = {
-  babel: {stage: 0, loose: "all", blacklist: ["es6.modules"]},
+  node: require('./config/node'),
   webpack: require("./config/webpack")
 };
-var serve = require("./tools/serve");
 
-gulp.task('clean', function (callback) {
-  del(['dist', 'browser', 'lib', 'plugins', 'vendor', 'index.js'], function() {
+gulp.task('clean:build', function (callback) {
+  del(['dist', 'lib', 'plugins', 'vendor', 'index.js'], function() {
     callback()
   })
 });
 
-gulp.task('full-clean', ['clean'], function(callback) {
+gulp.task('clean:all', ['clean:build'], function(callback) {
     del(['node_modules'], function() {
       callback()
     })
 });
 
-gulp.task('build', ['clean'], function () {
-    return gulp.src(["src/**/*.{jsx,js,es6}"])
-        .pipe(babel({stage: 0, loose: "all", blacklist: ["es6.modules"]}))
+gulp.task('build:node', ['clean:build'], function () {
+    return gulp.src(["src/**/*.{jsx,js,es6}", "!src/browser/**/*"])
+        .pipe(babel(config.node.babel))
         .pipe(gulp.dest("."))
 });
 
-gulp.task("webpack:build", ["build"], function (callback) {
-    webpack(config.webpack.normal, function (err, stats) {
-      if (err) throw new gutil.PluginError("webpack:build", err);
-      gutil.log("[webpack:build]", stats.toString({
+gulp.task("build:webpack", ["clean:build"], function (callback) {
+    webpack(config.webpack.dist, function (err, stats) {
+      if (err) throw new gutil.PluginError("build:webpack", err);
+      gutil.log("[build:webpack]", stats.toString({
         colors: true
       }));
       callback()
     });
 });
 
-gulp.task("webpack:build-minified", ["build"], function (callback) {
-    webpack(config.webpack.minified, function (err, stats) {
-      if (err) throw new gutil.PluginError("webpack:build-minified", err);
-      gutil.log("[webpack:build-minified]", stats.toString({
-        colors: true
-      }));
-      callback()
-    });
+gulp.task('build:all', ['build:node', 'build:webpack']);
+
+gulp.task("watch", ["build:all"], function () {
+    gulp.watch(["src/**/*"], ["build:all"]);
 });
-
-gulp.task('default', ['webpack:build', 'webpack:build-minified']);
-
-gulp.task("watch", ["webpack:build", 'webpack:build-minified'], function () {
-    gulp.watch(["src/**/*"], ["webpack:build", "webpack:build-minified"]);
-});
-
-gulp.task(
-    "example:todos",
-    ["webpack:build", "webpack:build-minified"],
-    serve("example:todos", "./examples/todos/")
-);

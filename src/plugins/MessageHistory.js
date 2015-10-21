@@ -1,6 +1,4 @@
 const invariant = require("invariant");
-const assign = require("object-assign");
-const bind = require("../lib/utils").bind;
 const Store = require("../lib/stores/Store");
 const Plugin = require('./Plugin');
 

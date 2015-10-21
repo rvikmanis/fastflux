@@ -57,10 +57,13 @@ class Application {
 
   addStore(id, store) {
     store = new store(this, id);
+
     invariant(store instanceof Store,
               "Wrong type: argument is not a subclass of Store");
 
-    this._stores[id] = store.getPublicContext();
+    invariant(!this.hasStore(id), "Trying to add store on existing ID");
+
+    this._stores[id] = store;
     return this.addCallback(id, bind(store.onMessage, store));
   }
 
@@ -82,7 +85,7 @@ class Application {
               "'%s' does not map to a registered store",
               id);
 
-    return this._stores[id];
+    return this._stores[id].getPublicContext();
   }
 
   addCallback(id, callback) {
