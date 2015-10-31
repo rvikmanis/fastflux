@@ -1,5 +1,5 @@
-var {clone, values, defProps,
-    freeze, chain, each, preventExtensions,
+var {clone, values,
+    freeze, chain, each,
     object, assign, map, pairs} = require('../utils');
 
 function Dispatcher(stores={}, callbacks={}, dependencies={}) {
@@ -39,7 +39,7 @@ function Dispatcher(stores={}, callbacks={}, dependencies={}) {
   });
   messageCallbackOrder = object(messageCallbackOrder);
 
-  defProps(this, {
+  Object.defineProperties(this, {
     _stores: {value: freeze(stores)},
     _callbacks: {value: freeze(map(callbacks, freeze))},
     _isDispatching: {value: false, writable: true},
@@ -86,6 +86,6 @@ Dispatcher.prototype.getState = function getState() {
 };
 
 function createDispatcher(opts={}) {
-  return preventExtensions(new Dispatcher(opts.stores, opts.callbacks, opts.dependencies))
+  return Object.preventExtensions(new Dispatcher(opts.stores, opts.callbacks, opts.dependencies))
 }
 module.exports.createDispatcher = createDispatcher;

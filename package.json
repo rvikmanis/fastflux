@@ -23,7 +23,6 @@
     "jasmine": "^2.3.2",
     "jasmine-spec-reporter": "^2.4.0",
     "node-libs-browser": "^0.5.2",
-    "react-addons-test-utils": "^0.14.1",
     "react-dom": "^0.14.1",
     "webpack": "^1.9.11"
   }

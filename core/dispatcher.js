@@ -2,11 +2,9 @@ var _require = require('../utils');
 
 var clone = _require.clone;
 var values = _require.values;
-var defProps = _require.defProps;
 var freeze = _require.freeze;
 var chain = _require.chain;
 var each = _require.each;
-var preventExtensions = _require.preventExtensions;
 var object = _require.object;
 var assign = _require.assign;
 var map = _require.map;
@@ -63,7 +61,7 @@ function Dispatcher() {
   });
   messageCallbackOrder = object(messageCallbackOrder);
 
-  defProps(this, {
+  Object.defineProperties(this, {
     _stores: { value: freeze(stores) },
     _callbacks: { value: freeze(map(callbacks, freeze)) },
     _isDispatching: { value: false, writable: true },
@@ -121,6 +119,6 @@ Dispatcher.prototype.getState = function getState() {
 function createDispatcher() {
   var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-  return preventExtensions(new Dispatcher(opts.stores, opts.callbacks, opts.dependencies));
+  return Object.preventExtensions(new Dispatcher(opts.stores, opts.callbacks, opts.dependencies));
 }
 module.exports.createDispatcher = createDispatcher;

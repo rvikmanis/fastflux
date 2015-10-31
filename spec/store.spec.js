@@ -24,20 +24,20 @@ describe('Store:', function() {
       REDUCERS = {
 
         append: function(state, message) {
-          return utils.assign(utils.create(ComparableState), state, {
+          return utils.assign(Object.create(ComparableState), state, {
             items: state.items.concat([Number(message.item)]),
             sum: null
           })
         },
 
         clear: function(state, message) {
-          return utils.assign(utils.create(ComparableState), state, {
+          return utils.assign(Object.create(ComparableState), state, {
             items: [], sum: null
           });
         },
 
         sum: function(state, message) {
-          return utils.assign(utils.create(ComparableState), state, {
+          return utils.assign(Object.create(ComparableState), state, {
             sum: state.items.reduce(function(p, c) { return p + c }, null)
           })
         },

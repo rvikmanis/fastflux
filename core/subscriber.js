@@ -2,7 +2,6 @@ var _require = require('../utils');
 
 const isObservable = _require.isObservable;
 const assign = _require.assign;
-const create = _require.create;
 
 var _require2 = require('react');
 
@@ -31,7 +30,7 @@ module.exports = function createSubscriber(wrappedComponent) {
     this.state = state;
   };
 
-  wrapper.prototype = create(Component.prototype, {
+  wrapper.prototype = Object.create(Component.prototype, {
 
     constructor: { value: wrapper },
 

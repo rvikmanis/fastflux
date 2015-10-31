@@ -1,13 +1,7 @@
 var assign = require('object-assign');
-var defProp = Object.defineProperty;
-var defProps = Object.defineProperties;
-var create = Object.create;
 
 module.exports = {
-  assign: assign,
-  defProp: defProp,
-  defProps: defProps,
-  create: create
+  assign: assign
 };
 
 
@@ -82,12 +76,6 @@ function clone(object) { return assign({}, object) }
 module.exports.clone = clone;
 
 
-function freeze(object) {
-  return (Object.freeze||id)(object)
-}
-module.exports.freeze = freeze;
-
-
 function object(p) {
   var r = {};
   each(p, ([key, value]) => r[key] = value);
@@ -106,15 +94,6 @@ function chain(value, fns) {
   return reduce(fns, (v, fn) => fn(v), value)
 }
 module.exports.chain = chain;
-
-
-function preventExtensions(object) {
-  if (typeof Object.preventExtensions === "function")
-    return Object.preventExtensions(object);
-
-  return object;
-}
-module.exports.preventExtensions = preventExtensions;
 
 
 function isObservable(object) {

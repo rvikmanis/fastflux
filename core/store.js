@@ -4,10 +4,6 @@ const Observable = _require.Observable;
 
 var _require2 = require('../utils');
 
-const create = _require2.create;
-const defProps = _require2.defProps;
-const preventExtensions = _require2.preventExtensions;
-const freeze = _require2.freeze;
 const clone = _require2.clone;
 
 function Store(initialState, reducers) {
@@ -16,19 +12,19 @@ function Store(initialState, reducers) {
   if (typeof reducers !== "object" && typeof reducers !== "function") throw new Error("Store.prototype.constructor: expects " + "a reducer function or object mapping message types -> reducer functions " + "as second parameter");
 
   if (typeof reducers === "object") {
-    reducers = freeze(clone(reducers));
+    reducers = Object.freeze(clone(reducers));
   }
 
   Observable.call(this);
 
-  defProps(this, {
+  Object.defineProperties(this, {
     _state: { value: initialState, writable: true },
     _reducers: { value: reducers }
   });
 }
 module.exports.Store = Store;
 
-Store.prototype = create(Observable.prototype);
+Store.prototype = Object.create(Observable.prototype);
 Store.prototype.constructor = Store;
 
 Store.prototype.emit = function emit() {
@@ -56,6 +52,6 @@ Store.prototype.getState = function getState() {
 };
 
 function createStore(initialState, reducers) {
-  return preventExtensions(new Store(initialState, reducers));
+  return Object.preventExtensions(new Store(initialState, reducers));
 }
 module.exports.createStore = createStore;

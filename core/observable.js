@@ -1,10 +1,9 @@
 var _require = require('../utils');
 
-var defProps = _require.defProps;
 var each = _require.each;
 
 function Observable() {
-  defProps(this, {
+  Object.defineProperties(this, {
     _listeners: { value: [] }
   });
 }

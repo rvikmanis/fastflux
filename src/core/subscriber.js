@@ -1,4 +1,4 @@
-const {isObservable, assign, create} = require('../utils');
+const {isObservable, assign} = require('../utils');
 const {Component, createElement: el} = require('react');
 
 
@@ -28,7 +28,7 @@ module.exports = function createSubscriber(wrappedComponent) {
     this.state = state;
   };
 
-  wrapper.prototype = create(Component.prototype, {
+  wrapper.prototype = Object.create(Component.prototype, {
 
     constructor: {value: wrapper},
 

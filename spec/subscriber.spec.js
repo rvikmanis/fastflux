@@ -9,15 +9,12 @@ var _ = require('../core/store'),
  createStore = _.createStore;
 var React = require('react');
 var ReactDOM = require('react-dom');
-var ReactTestUtils = require('react-addons-test-utils');
-var shallow = ReactTestUtils.createRenderer();
-var shallowChild = ReactTestUtils.createRenderer();
 
 
 function FooComponent() {
   React.Component.apply(this, arguments);
 }
-FooComponent.prototype = utils.create(React.Component.prototype);
+FooComponent.prototype = Object.create(React.Component.prototype);
 FooComponent.prototype.constructor = FooComponent;
 
 FooComponent.prototype.render = function render() {
