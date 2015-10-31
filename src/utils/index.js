@@ -1,7 +1,7 @@
-const assign = require('object-assign');
-const {defineProperty: defProp,
-       defineProperties: defProps} = require('object-define-property');
-const create = require('object-create');
+var assign = require('object-assign');
+var defProp = Object.defineProperty;
+var defProps = Object.defineProperties;
+var create = Object.create;
 
 module.exports = {
   assign: assign,

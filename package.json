@@ -7,8 +7,6 @@
   "license": "MIT",
   "dependencies": {
     "object-assign": "^4.0.1",
-    "object-create": "^0.1.0",
-    "object-define-property": "^0.1.0",
     "react": "^0.14.1"
   },
   "devDependencies": {
