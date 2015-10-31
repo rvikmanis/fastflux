@@ -1,5 +1,5 @@
 var {clone, values,
-    freeze, chain, each,
+    chain, each,
     object, assign, map, pairs} = require('../utils');
 
 function Dispatcher(stores={}, callbacks={}, dependencies={}) {
@@ -13,8 +13,8 @@ function Dispatcher(stores={}, callbacks={}, dependencies={}) {
   ]);
 
   values(dependencies, d => {
-    freeze(d);
-    values(d, dd => { freeze(dd); })
+    Object.freeze(d);
+    values(d, dd => { Object.freeze(dd); })
   });
 
   var messageCallbackOrder = values(dependencies, (cbDeps, messageType) => {
@@ -35,16 +35,16 @@ function Dispatcher(stores={}, callbacks={}, dependencies={}) {
     }
 
     each(callbackNames, visit);
-    return [messageType, freeze(cbo)];
+    return [messageType, Object.freeze(cbo)];
   });
   messageCallbackOrder = object(messageCallbackOrder);
 
   Object.defineProperties(this, {
-    _stores: {value: freeze(stores)},
-    _callbacks: {value: freeze(map(callbacks, freeze))},
+    _stores: {value: Object.freeze(stores)},
+    _callbacks: {value: Object.freeze(map(callbacks, Object.freeze))},
     _isDispatching: {value: false, writable: true},
-    _messageCallbackOrder: {value: freeze(messageCallbackOrder)},
-    _dependencies: {value: freeze(dependencies)}
+    _messageCallbackOrder: {value: Object.freeze(messageCallbackOrder)},
+    _dependencies: {value: Object.freeze(dependencies)}
   })
 }
 module.exports.Dispatcher = Dispatcher;
@@ -81,7 +81,7 @@ Dispatcher.prototype.getState = function getState() {
   return chain(this._stores, [
       _ => values(_, (s, k) => [k, s.getState()]),
       _ => object(_),
-      _ => freeze(_)
+      _ => Object.freeze(_)
   ]);
 };
 
