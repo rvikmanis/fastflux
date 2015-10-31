@@ -2,7 +2,6 @@ var _require = require('../utils');
 
 var clone = _require.clone;
 var values = _require.values;
-var freeze = _require.freeze;
 var chain = _require.chain;
 var each = _require.each;
 var object = _require.object;
@@ -32,9 +31,9 @@ function Dispatcher() {
   }]);
 
   values(dependencies, function (d) {
-    freeze(d);
+    Object.freeze(d);
     values(d, function (dd) {
-      freeze(dd);
+      Object.freeze(dd);
     });
   });
 
@@ -57,16 +56,16 @@ function Dispatcher() {
     }
 
     each(callbackNames, visit);
-    return [messageType, freeze(cbo)];
+    return [messageType, Object.freeze(cbo)];
   });
   messageCallbackOrder = object(messageCallbackOrder);
 
   Object.defineProperties(this, {
-    _stores: { value: freeze(stores) },
-    _callbacks: { value: freeze(map(callbacks, freeze)) },
+    _stores: { value: Object.freeze(stores) },
+    _callbacks: { value: Object.freeze(map(callbacks, Object.freeze)) },
     _isDispatching: { value: false, writable: true },
-    _messageCallbackOrder: { value: freeze(messageCallbackOrder) },
-    _dependencies: { value: freeze(dependencies) }
+    _messageCallbackOrder: { value: Object.freeze(messageCallbackOrder) },
+    _dependencies: { value: Object.freeze(dependencies) }
   });
 }
 module.exports.Dispatcher = Dispatcher;
@@ -112,7 +111,7 @@ Dispatcher.prototype.getState = function getState() {
   }, function (_) {
     return object(_);
   }, function (_) {
-    return freeze(_);
+    return Object.freeze(_);
   }]);
 };
 
