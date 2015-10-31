@@ -52,7 +52,7 @@ describe('Store:', function() {
 
     });
 
-    describe('When attempting to pass wrong args or call illegal methods', function() {
+    describe('(When attempting to pass wrong args or call illegal methods)', function() {
 
       describe('#createStore(state: undefined, reducers: undefined)', function() {
         it('raises an error', function() {
@@ -84,7 +84,7 @@ describe('Store:', function() {
 
     });
 
-    describe('With one reducer and non-comparable state', function() {
+    describe('(With one reducer and non-comparable state)', function() {
 
       var store;
       var reducer;
@@ -184,7 +184,7 @@ describe('Store:', function() {
 
     });
 
-    describe('With multiple reducers and comparable state', function() {
+    describe('(With multiple reducers and comparable state)', function() {
 
       var store;
       var reducers;

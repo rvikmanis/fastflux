@@ -6,10 +6,12 @@
   "author": "Rudolfs Vikmanis <rudolfs.vikmanis@gmail.com> (https://github.com/rvikmanis)",
   "license": "MIT",
   "dependencies": {
+    "mock-browser": "^0.91.34",
     "object-assign": "^4.0.1",
     "object-create": "^0.1.0",
     "object-define-property": "^0.1.0",
-    "react": "^0.14.1"
+    "react": "^0.14.1",
+    "react-dom": "^0.14.1"
   },
   "devDependencies": {
     "babel": "^5.6.4",
@@ -24,6 +26,7 @@
     "jasmine": "^2.3.2",
     "jasmine-spec-reporter": "^2.4.0",
     "node-libs-browser": "^0.5.2",
+    "react-addons-test-utils": "^0.14.1",
     "webpack": "^1.9.11"
   }
 }

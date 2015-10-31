@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Code coverage report for core/store.js</title>
+    <title>Code coverage report for core/subscriber.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -16,28 +16,28 @@
 <div class='wrapper'>
   <div class='pad1'>
     <h1>
-      <a href="../index.html">all files</a> / <a href="index.html">core/</a> store.js
+      <a href="../index.html">all files</a> / <a href="index.html">core/</a> subscriber.js
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">97.44% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>39/39</span>
+        <span class='fraction'>38/39</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">75% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>19/19</span>
+        <span class='fraction'>3/4</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>5/5</span>
+        <span class='fraction'>7/7</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>35/35</span>
+        <span class='fraction'>36/36</span>
       </div>
     </div>
   </div>
@@ -103,33 +103,25 @@
 58
 59
 60
-61</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</td><td class="line-coverage quiet"><span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">8×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4×</span>
-<span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -137,93 +129,128 @@
 <span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">14×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14×</span>
-<span class="cline-any cline-yes">9×</span>
-<span class="cline-any cline-yes">8×</span>
-<span class="cline-any cline-yes">5×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12×</span>
-<span class="cline-any cline-yes">12×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">5×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1×</span>
-<span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span></td><td class="text"><pre class="prettyprint lang-js">var _require = require('./observable');
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">var _require = require('../utils');
 &nbsp;
-const Observable = _require.Observable;
+const isObservable = _require.isObservable;
+const assign = _require.assign;
+const create = _require.create;
 &nbsp;
-var _require2 = require('../utils');
+var _require2 = require('react');
 &nbsp;
-const create = _require2.create;
-const defProps = _require2.defProps;
-const preventExtensions = _require2.preventExtensions;
-const freeze = _require2.freeze;
-const clone = _require2.clone;
+const Component = _require2.Component;
+const el = _require2.createElement;
 &nbsp;
-function Store(initialState, reducers) {
-  if (initialState === undefined) throw new Error("Store.prototype.constructor: expects " + "initial state as first parameter");
+module.exports = function createSubscriber(wrappedComponent) {
 &nbsp;
-  if (typeof reducers !== "object" &amp;&amp; typeof reducers !== "function") throw new Error("Store.prototype.constructor: expects " + "a reducer function or object mapping message types -&gt; reducer functions " + "as second parameter");
+  var wrapper = function (props, context) {
+    Component.call(this, props, context);
 &nbsp;
-  if (typeof reducers === "object") {
-    reducers = freeze(clone(reducers));
-  }
+    this.normalProps = {};
+    this.observableProps = {};
+    this.updaters = {};
 &nbsp;
-  Observable.call(this);
+    var state = {};
 &nbsp;
-  defProps(this, {
-    _state: { value: initialState, writable: true },
-    _reducers: { value: reducers }
+    for (var k in this.props) {
+      var prop = this.props[k];
+      if (!isObservable(prop)) this.normalProps[k] = prop;else {
+        this.observableProps[k] = prop;
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (typeof prop.getState !== "function") <span class="cstat-no" title="statement not covered" >state[k] = null;e</span>lse state[k] = prop.getState();
+      }
+    }
+&nbsp;
+    this.state = state;
+  };
+&nbsp;
+  wrapper.prototype = create(Component.prototype, {
+&nbsp;
+    constructor: { value: wrapper },
+&nbsp;
+    componentWillMount: { value: function () {
+        var _this = this;
+&nbsp;
+        var _loop = function (k) {
+          var observable = _this.observableProps[k];
+          var updater = _this.updaters[k] = function (state) {
+            var updated = {};
+            updated[k] = state;
+            _this.setState(updated);
+          };
+          observable.observe(updater);
+        };
+&nbsp;
+        for (var k in this.observableProps) {
+          _loop(k);
+        }
+      } },
+&nbsp;
+    componentWillUnmount: { value: function () {
+        for (var k in this.updaters) {
+          this.observableProps[k].unobserve(this.updaters[k]);
+          delete this.updaters[k];
+        }
+      } },
+&nbsp;
+    render: { value: function () {
+        return el(wrappedComponent, assign({}, this.normalProps, this.state));
+      } }
+&nbsp;
   });
-}
-module.exports.Store = Store;
 &nbsp;
-Store.prototype = create(Observable.prototype);
-Store.prototype.constructor = Store;
-&nbsp;
-Store.prototype.emit = function emit() {
-  throw new Error("emit: cannot call from outside the store");
-};
-&nbsp;
-Store.prototype.send = function send(message, context) {
-  var reducer;
-&nbsp;
-  if (typeof this._reducers === "object") {
-    if (!this._reducers.hasOwnProperty(message.type)) return;
-    reducer = this._reducers[message.type];
-  } else reducer = this._reducers;
-&nbsp;
-  var newState = reducer.call(context || {}, this._state, message);
-&nbsp;
-  if (newState != null &amp;&amp; typeof newState.equals === "function" &amp;&amp; newState.equals(this._state)) return;
-&nbsp;
-  this._state = newState;
-  Observable.prototype.emit.call(this, this._state);
-};
-&nbsp;
-Store.prototype.getState = function getState() {
-  return this._state;
-};
-&nbsp;
-function createStore(initialState, reducers) {
-  return preventExtensions(new Store(initialState, reducers));
-}
-module.exports.createStore = createStore;</pre></td></tr>
+  return wrapper;
+};</pre></td></tr>
 </table></pre>
 <div class='push'></div><!-- for sticky footer -->
 </div><!-- /wrapper -->
