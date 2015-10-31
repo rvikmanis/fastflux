@@ -1,7 +1,11 @@
 var babel = {
-  stage: 0,
   loose: "all",
-  blacklist: ["es6.modules"]
+  whitelist: [
+    "es6.destructuring",
+    "es6.arrowFunctions",
+    "es6.parameters",
+    "es6.blockScoping"
+  ]
 };
 
 module.exports = {babel: babel};

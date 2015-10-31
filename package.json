@@ -6,21 +6,11 @@
   "author": "Rudolfs Vikmanis <rudolfs.vikmanis@gmail.com> (https://github.com/rvikmanis)",
   "license": "MIT",
   "dependencies": {
-    "babel-jest": "^5.3.0",
-    "invariant": "^2.1.0",
-    "jest-cli": "^0.5.10",
     "object-assign": "^4.0.1",
-    "react": "^0.13.3"
-  },
-  "scripts": {
-    "test": "BABEL_JEST_STAGE=0 jest"
-  },
-  "jest": {
-    "scriptPreprocessor": "<rootDir>/node_modules/babel-jest",
-    "unmockedModulePathPatterns": [
-      "<rootDir>/node_modules/react",
-      "<rootDir>/src"
-    ]
+    "object-create": "^0.1.0",
+    "object-define-property": "^0.1.0",
+    "object-keys": "^1.0.9",
+    "react": "^0.14.1"
   },
   "devDependencies": {
     "babel": "^5.6.4",
@@ -29,7 +19,11 @@
     "del": "^1.2.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^5.1.0",
+    "gulp-istanbul": "^0.10.2",
+    "gulp-jasmine": "^2.2.0",
     "gulp-util": "^3.0.5",
+    "jasmine": "^2.3.2",
+    "jasmine-spec-reporter": "^2.4.0",
     "node-libs-browser": "^0.5.2",
     "webpack": "^1.9.11"
   }

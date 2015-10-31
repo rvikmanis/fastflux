@@ -1,8 +1,10 @@
 var assign = require("object-assign");
 var gulp = require('gulp');
 var gutil = require("gulp-util");
-var webpack = require("webpack");
 var babel = require('gulp-babel');
+var istanbul = require('gulp-istanbul');
+var jasmine = require('gulp-jasmine');
+var webpack = require("webpack");
 var del = require("del");
 
 var config = {
@@ -11,7 +13,7 @@ var config = {
 };
 
 gulp.task('clean:build', function (callback) {
-  del(['dist', 'lib', 'plugins', 'vendor', 'index.js'], function() {
+  del(['dist', 'core', 'utils', 'index.js'], function() {
     callback()
   })
 });
@@ -23,7 +25,7 @@ gulp.task('clean:all', ['clean:build'], function(callback) {
 });
 
 gulp.task('build:node', ['clean:build'], function () {
-    return gulp.src(["src/**/*.{jsx,js,es6}", "!src/browser/**/*"])
+    return gulp.src(["src/**/*.js", "!src/browser/**/*"])
         .pipe(babel(config.node.babel))
         .pipe(gulp.dest("."))
 });
@@ -42,4 +44,17 @@ gulp.task('build:all', ['build:node', 'build:webpack']);
 
 gulp.task("watch", ["build:all"], function () {
     gulp.watch(["src/**/*"], ["build:all"]);
+});
+
+gulp.task('test:pre', function () {
+  return gulp.src(['core/*.js'])
+    .pipe(istanbul())
+    .pipe(istanbul.hookRequire());
+});
+
+gulp.task('test', ['test:pre'], function () {
+  return gulp.src('spec/**/*')
+   .pipe(jasmine({reporter: new (require('jasmine-spec-reporter'))}))
+   .pipe(istanbul.writeReports())
+   .pipe(istanbul.enforceThresholds({ thresholds: { global: 90 } }));
 });

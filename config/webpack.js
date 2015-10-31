@@ -1,12 +1,11 @@
 var webpack = require("webpack");
 var path = require("path");
-var assign = require("object-assign");
 
 var dist = {
   entry: {
-    "fastflux": "./fastflux",
-    "plugins/socketio-broker": "./plugins/socketio-broker",
-    "plugins/message-history": "./plugins/message-history"
+    "fastflux": "./fastflux"
+    //"plugins/socketio-broker": "./plugins/socketio-broker",
+    //"plugins/message-history": "./plugins/message-history"
   },
   context: path.join(__dirname, "..", "src/browser"),
   output: {
@@ -17,15 +16,24 @@ var dist = {
   module: {
     loaders: [
       {
-        test: /\.(jsx?|es6)$/,
+        test: /\.js$/,
         include: path.join(__dirname, "..", "src"),
         exclude: /node_modules/,
-        loader: "babel-loader?stage=0&loose=all&blacklist[]=es6.modules"
+        loader: "babel",
+        query: {
+          loose: "all",
+          whitelist: [
+            "es6.destructuring",
+            "es6.arrowFunctions",
+            "es6.parameters",
+            "es6.blockScoping"
+          ]
+        }
       }
     ]
   },
   resolve: {
-    extensions: ["", ".js", ".jsx", ".es6"]
+    extensions: ["", ".js"]
   },
   externals: [{
     react: "React"
