@@ -1,11 +1,9 @@
 var webpack = require("webpack");
 var path = require("path");
 
-var dist = {
+module.exports = {
   entry: {
     "fastflux": "./fastflux"
-    //"plugins/socketio-broker": "./plugins/socketio-broker",
-    //"plugins/message-history": "./plugins/message-history"
   },
   context: path.join(__dirname, "..", "src/browser"),
   output: {
@@ -20,15 +18,7 @@ var dist = {
         include: path.join(__dirname, "..", "src"),
         exclude: /node_modules/,
         loader: "babel",
-        query: {
-          loose: "all",
-          whitelist: [
-            "es6.destructuring",
-            "es6.arrowFunctions",
-            "es6.parameters",
-            "es6.blockScoping"
-          ]
-        }
+        query: require('./babel')
       }
     ]
   },
@@ -45,5 +35,3 @@ var dist = {
     new webpack.optimize.OccurenceOrderPlugin()
   ]
 };
-
-module.exports = {dist: dist};

@@ -1,4 +1,4 @@
-var babel = {
+module.exports = {
   loose: "all",
   whitelist: [
     "es6.destructuring",
@@ -7,5 +7,3 @@ var babel = {
     "es6.blockScoping"
   ]
 };
-
-module.exports = {babel: babel};

@@ -8,7 +8,7 @@ var _require2 = require('react');
 const Component = _require2.Component;
 const el = _require2.createElement;
 
-module.exports = function createSubscriber(wrappedComponent) {
+module.exports.createSubscriber = function createSubscriber(wrappedComponent) {
 
   var wrapper = function (props, context) {
     Component.call(this, props, context);
@@ -23,7 +23,7 @@ module.exports = function createSubscriber(wrappedComponent) {
       var prop = this.props[k];
       if (!isObservable(prop)) this.normalProps[k] = prop;else {
         this.observableProps[k] = prop;
-        if (typeof prop.getState !== "function") state[k] = null;else state[k] = prop.getState();
+        if (typeof prop.getState === "function") state[k] = prop.getState();
       }
     }
 
@@ -56,6 +56,21 @@ module.exports = function createSubscriber(wrappedComponent) {
         for (var k in this.updaters) {
           this.observableProps[k].unobserve(this.updaters[k]);
           delete this.updaters[k];
+        }
+      } },
+
+    componentWillReceiveProps: { value: function (nextProps) {
+        for (var k in this.observableProps) {
+          if (nextProps[k] !== this.observableProps[k]) throw new Error("Cannot change observable prop once initialized. " + "To change the value, call emit");
+        }
+        for (var k in this.normalProps) {
+          if (nextProps[k] === undefined) delete this.normalProps[k];
+        }
+        for (var k in nextProps) {
+          var prop = nextProps[k];
+          if (!(k in this.observableProps)) {
+            if (!isObservable(prop)) this.normalProps[k] = prop;else throw new Error("Cannot change non-observable prop to observable once initialized");
+          }
         }
       } },
 

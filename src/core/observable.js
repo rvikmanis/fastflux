@@ -1,5 +1,3 @@
-var {each} = require('../utils');
-
 function Observable() {
   Object.defineProperties(this, {
     _listeners: {value: []}

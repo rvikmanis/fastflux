@@ -1,8 +1,23 @@
-const {Observable} = require('./observable');
-const {clone} = require('../utils');
+/**
+ * @module fastflux/core/store
+ */
 
+var {Observable} = require('./observable');
+var {clone} = require('../utils');
 
-function Store(initialState, reducers) {
+/**
+ * @callback reducer
+ * @param state: any - Current state of the store.
+ * @param message: object - An object describing what the reducer should do.
+ * @return any - New state of the store.
+ */
+
+/**
+ * @param initialState: any
+ * @param reducers: reducer|object<reducer>
+ * @class
+ */
+var Store = module.exports.Store = function Store(initialState, reducers) {
   if (initialState === undefined)
     throw new Error("Store.prototype.constructor: expects " +
         "initial state as first parameter");
@@ -22,17 +37,13 @@ function Store(initialState, reducers) {
     _state: {value: initialState, writable: true},
     _reducers: {value: reducers}
   })
-}
-module.exports.Store = Store;
-
+};
 
 Store.prototype = Object.create(Observable.prototype);
 Store.prototype.constructor = Store;
 
 
-Store.prototype.emit = function emit() {
-  throw new Error("emit: cannot call from outside the store");
-};
+Store.prototype.emit = null;
 
 
 Store.prototype.send = function send(message, context) {
@@ -56,12 +67,22 @@ Store.prototype.send = function send(message, context) {
   Observable.prototype.emit.call(this, this._state);
 };
 
-
+/**
+ *
+ * @method Store#getState
+ * @return any
+ */
 Store.prototype.getState = function getState() {
   return this._state;
 };
 
 
+/**
+ *
+ * @param initialState: any
+ * @param reducers: reducer|object<reducer>
+ * @return Store
+ */
 function createStore(initialState, reducers) {
   return Object.preventExtensions(new Store(initialState, reducers))
 }

@@ -8,34 +8,44 @@ var webpack = require("webpack");
 var del = require("del");
 
 var config = {
-  node: require('./config/node'),
+  babel: require('./config/babel'),
   webpack: require("./config/webpack")
 };
 
-gulp.task('clean:build', function (callback) {
-  del(['dist', 'core', 'utils', 'index.js'], function() {
+gulp.task('clean:webpack', function(callback) {
+  del(['dist'], function() { callback() });
+});
+
+gulp.task('clean:node', function (callback) {
+  del(['core', 'utils', 'index.js'], function() {
     callback()
   })
 });
 
-gulp.task('clean:all', ['clean:build'], function(callback) {
-    del(['node_modules'], function() {
+gulp.task('clean:test', function(callback) {
+    del(['coverage'], function() {
       callback()
     })
 });
 
-gulp.task('build:node', ['clean:build'], function () {
+gulp.task('clean:all',
+          ['clean:node', 'clean:webpack', 'clean:test'],
+          function(callback) {
+            del(['node_modules'], function() {
+              callback()
+            })
+          });
+
+gulp.task('build:node', ['clean:node'], function () {
     return gulp.src(["src/**/*.js", "!src/browser/**/*"])
-        .pipe(babel(config.node.babel))
+        .pipe(babel(config.babel))
         .pipe(gulp.dest("."))
 });
 
-gulp.task("build:webpack", ["clean:build"], function (callback) {
-    webpack(config.webpack.dist, function (err, stats) {
+gulp.task("build:webpack", ["clean:webpack"], function (callback) {
+    webpack(config.webpack, function (err, stats) {
       if (err) throw new gutil.PluginError("build:webpack", err);
-      gutil.log("[build:webpack]", stats.toString({
-        colors: true
-      }));
+      console.log(stats.toString({colors: true}));
       callback()
     });
 });
@@ -46,7 +56,7 @@ gulp.task("watch", ["build:all"], function () {
     gulp.watch(["src/**/*"], ["build:all"]);
 });
 
-gulp.task('test:pre', function () {
+gulp.task('test:pre', ['build:node'], function () {
   return gulp.src(['core/*.js'])
     .pipe(istanbul())
     .pipe(istanbul.hookRequire());

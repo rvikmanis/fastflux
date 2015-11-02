@@ -1,15 +1,21 @@
-var MockBrowser = require('mock-browser').mocks.MockBrowser;
-global.window = MockBrowser.createWindow();
-global.document = window.document;
-global.navigator = window.navigator;
+if (typeof window === 'undefined') {
+  global.window = require('mock-browser').mocks.MockBrowser.createWindow();
+  global.document = window.document;
+  global.navigator = window.navigator;
+}
 
-var utils = require('../utils');
-var createSubscriber = require('../core/subscriber');
-var _ = require('../core/store'),
- createStore = _.createStore;
 var React = require('react');
 var ReactDOM = require('react-dom');
 
+var utils = require('../utils');
+var createSubscriber = require('../core/subscriber').createSubscriber;
+var createStore = require('../core/store').createStore;
+var Observable = require('../core/observable').Observable;
+
+
+function getRenderedText() {
+  return document.querySelector("#foo").textContent
+}
 
 function FooComponent() {
   React.Component.apply(this, arguments);
@@ -20,44 +26,116 @@ FooComponent.prototype.constructor = FooComponent;
 FooComponent.prototype.render = function render() {
   return React.createElement("div", {id: "foo"}, this.props.greeting + ", " + this.props.name + "!");
 };
+FooComponent.defaultProps = { name: "Guest", greeting: "Welcome" };
+FooComponent = createSubscriber(FooComponent);
 
 
 describe('Subscriber:', function() {
 
     var store;
-    var Subscriber;
-    var update;
+    var observable;
     var mountPoint;
-    var getRenderedText;
 
     beforeAll(function() {
       store = createStore("World", function(state, message) {
-        if (message.type === "update") return message.state;
+        if (message.type === "update") state = message.state;
         return state;
       });
-      update = function update(name) {
-        store.send({"type": "update", state: name});
-      };
-      Subscriber = createSubscriber(FooComponent);
+      observable = new Observable;
       mountPoint = document.createElement("div");
       document.body.appendChild(mountPoint);
-      getRenderedText = function() { return document.querySelector("#foo").textContent }
     });
 
-    it('renders successfully', function() {
-      ReactDOM.render(React.createElement(Subscriber, {name: store, greeting: "Hello"}), mountPoint);
-      expect(getRenderedText()).toEqual("Hello, World!");
+
+    describe('(With store as observable)', function() {
+      it('renders successfully', function() {
+        ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: "Hello"}), mountPoint);
+        expect(getRenderedText()).toEqual("Hello, World!");
+      });
+
+      it('updates successfully', function() {
+        store.send({"type": "update", state: "friend"});
+        expect(getRenderedText()).toEqual("Hello, friend!");
+      });
+
+      it('handles normal prop change', function() {
+        ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: "Greetings"}), mountPoint);
+        expect(getRenderedText()).toEqual("Greetings, friend!");
+      });
+
+      it('raises an error when attempting to replace non-observable prop with observable',
+         function() {
+           expect(function() {
+             ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: observable}), mountPoint)
+           }).toThrow();
+         }
+      );
+
+      it('handles normal prop deletion', function() {
+        ReactDOM.render(React.createElement(FooComponent, {name: store}), mountPoint);
+        expect(getRenderedText()).toEqual("Welcome, friend!");
+      });
+
+      it('raises an error when attempting to remove observable prop',
+         function() {
+           expect(function() {
+             ReactDOM.render(React.createElement(FooComponent), mountPoint);
+           }).toThrow();
+         }
+      );
+
+      it('raises an error when attempting to replace observable prop with another observable',
+         function() {
+           expect(function() {
+             ReactDOM.render(React.createElement(FooComponent, {name: observable}), mountPoint);
+           }).toThrow();
+         }
+      );
+
+      it('raises an error when attempting to change observable prop to normal',
+         function() {
+           expect(function() {
+             ReactDOM.render(React.createElement(FooComponent, {name: "Rudolfs"}), mountPoint);
+           }).toThrow();
+         }
+      );
+
+      it('raises an error when attempting to add new observable prop',
+         function() {
+           expect(function() {
+             ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: observable}), mountPoint)
+           }).toThrow();
+         }
+      );
+
+      it('handles normal prop adding', function() {
+        ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: "Sup"}), mountPoint);
+        expect(getRenderedText()).toEqual("Sup, friend!");
+      });
+
+      it('unmounts successfully', function() {
+        var r = ReactDOM.unmountComponentAtNode(mountPoint);
+        expect(r).toBe(true);
+        expect(getRenderedText).toThrow();
+      });
     });
 
-    it('updates successfully', function() {
-      update("Mars");
-      expect(getRenderedText()).toEqual("Hello, Mars!");
-    });
+    describe('(With plain observable)', function() {
+      it('renders successfully', function() {
+        ReactDOM.render(React.createElement(FooComponent, {name: observable}), mountPoint);
+        expect(getRenderedText()).toEqual("Welcome, Guest!");
+      });
 
-    it('unmounts successfully', function() {
-      var r = ReactDOM.unmountComponentAtNode(mountPoint);
-      expect(r).toBe(true);
-      expect(getRenderedText).toThrow();
+      it('updates successfully', function() {
+        observable.emit("Rudolfs");
+        expect(getRenderedText()).toEqual("Welcome, Rudolfs!");
+      });
+
+      it('unmounts successfully', function() {
+        var r = ReactDOM.unmountComponentAtNode(mountPoint);
+        expect(r).toBe(true);
+        expect(getRenderedText).toThrow();
+      });
     });
 
 });
