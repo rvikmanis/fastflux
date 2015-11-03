@@ -1,23 +1,13 @@
-/**
- * @module fastflux/core/store
- */
-
 var {Observable} = require('./observable');
 var {clone} = require('../utils');
 
-/**
- * @callback reducer
- * @param state: any - Current state of the store.
- * @param message: object - An object describing what the reducer should do.
- * @return any - New state of the store.
- */
+function Store() {
+  if (this.constructor === Store)
+    throw new Error("Store is abstract: extend or call createStore");
 
-/**
- * @param initialState: any
- * @param reducers: reducer|object<reducer>
- * @class
- */
-var Store = module.exports.Store = function Store(initialState, reducers) {
+  var initialState = this.constructor.initialState;
+  var reducers = this.constructor.reducers || this.constructor.reducer;
+
   if (initialState === undefined)
     throw new Error("Store.prototype.constructor: expects " +
         "initial state as first parameter");
@@ -36,15 +26,13 @@ var Store = module.exports.Store = function Store(initialState, reducers) {
   Object.defineProperties(this, {
     _state: {value: initialState, writable: true},
     _reducers: {value: reducers}
-  })
-};
+  });
+}
 
 Store.prototype = Object.create(Observable.prototype);
 Store.prototype.constructor = Store;
 
-
 Store.prototype.emit = null;
-
 
 Store.prototype.send = function send(message, context) {
   var reducer;
@@ -67,23 +55,20 @@ Store.prototype.send = function send(message, context) {
   Observable.prototype.emit.call(this, this._state);
 };
 
-/**
- *
- * @method Store#getState
- * @return any
- */
 Store.prototype.getState = function getState() {
   return this._state;
 };
 
-
-/**
- *
- * @param initialState: any
- * @param reducers: reducer|object<reducer>
- * @return Store
- */
 function createStore(initialState, reducers) {
-  return Object.preventExtensions(new Store(initialState, reducers))
+  function _s() {
+    Store.call(this);
+  }
+  _s.prototype = Object.create(Store.prototype);
+  _s.prototype.constructor = _s;
+  _s.initialState = initialState;
+  _s.reducers = reducers;
+  return new _s;
 }
+
+module.exports.Store = Store;
 module.exports.createStore = createStore;

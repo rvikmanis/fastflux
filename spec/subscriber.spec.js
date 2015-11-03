@@ -14,7 +14,7 @@ var Observable = require('../core/observable').Observable;
 
 
 function getRenderedText() {
-  return document.querySelector("#foo").textContent
+  return document.getElementById("foo").textContent
 }
 
 function FooComponent() {
@@ -24,7 +24,8 @@ FooComponent.prototype = Object.create(React.Component.prototype);
 FooComponent.prototype.constructor = FooComponent;
 
 FooComponent.prototype.render = function render() {
-  return React.createElement("div", {id: "foo"}, this.props.greeting + ", " + this.props.name + "!");
+  return React.createElement("div", {id: "foo"},
+                             this.props.greeting + ", " + this.props.name + "!")
 };
 FooComponent.defaultProps = { name: "Guest", greeting: "Welcome" };
 FooComponent = createSubscriber(FooComponent);
@@ -35,6 +36,7 @@ describe('Subscriber:', function() {
     var store;
     var observable;
     var mountPoint;
+    var render;
 
     beforeAll(function() {
       store = createStore("World", function(state, message) {
@@ -42,14 +44,21 @@ describe('Subscriber:', function() {
         return state;
       });
       observable = new Observable;
+
       mountPoint = document.createElement("div");
       document.body.appendChild(mountPoint);
+      render = function render(props) {
+        return ReactDOM.render(React.createElement(
+          FooComponent,
+          props || null
+        ), mountPoint);
+      }
     });
 
 
     describe('(With store as observable)', function() {
       it('renders successfully', function() {
-        ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: "Hello"}), mountPoint);
+        render({name: store, greeting: "Hello"});
         expect(getRenderedText()).toEqual("Hello, World!");
       });
 
@@ -59,27 +68,27 @@ describe('Subscriber:', function() {
       });
 
       it('handles normal prop change', function() {
-        ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: "Greetings"}), mountPoint);
+        render({name: store, greeting: "Greetings"});
         expect(getRenderedText()).toEqual("Greetings, friend!");
       });
 
       it('raises an error when attempting to replace non-observable prop with observable',
          function() {
            expect(function() {
-             ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: observable}), mountPoint)
+             render({name: store, greeting: observable});
            }).toThrow();
          }
       );
 
       it('handles normal prop deletion', function() {
-        ReactDOM.render(React.createElement(FooComponent, {name: store}), mountPoint);
+        render({name: store});
         expect(getRenderedText()).toEqual("Welcome, friend!");
       });
 
       it('raises an error when attempting to remove observable prop',
          function() {
            expect(function() {
-             ReactDOM.render(React.createElement(FooComponent), mountPoint);
+             render();
            }).toThrow();
          }
       );
@@ -87,7 +96,7 @@ describe('Subscriber:', function() {
       it('raises an error when attempting to replace observable prop with another observable',
          function() {
            expect(function() {
-             ReactDOM.render(React.createElement(FooComponent, {name: observable}), mountPoint);
+             render({name: observable});
            }).toThrow();
          }
       );
@@ -95,7 +104,7 @@ describe('Subscriber:', function() {
       it('raises an error when attempting to change observable prop to normal',
          function() {
            expect(function() {
-             ReactDOM.render(React.createElement(FooComponent, {name: "Rudolfs"}), mountPoint);
+             render({name: "Rudolfs"});
            }).toThrow();
          }
       );
@@ -103,13 +112,13 @@ describe('Subscriber:', function() {
       it('raises an error when attempting to add new observable prop',
          function() {
            expect(function() {
-             ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: observable}), mountPoint)
+             render({name: store, greeting: observable});
            }).toThrow();
          }
       );
 
       it('handles normal prop adding', function() {
-        ReactDOM.render(React.createElement(FooComponent, {name: store, greeting: "Sup"}), mountPoint);
+        render({name: store, greeting: "Sup"});
         expect(getRenderedText()).toEqual("Sup, friend!");
       });
 
@@ -122,7 +131,7 @@ describe('Subscriber:', function() {
 
     describe('(With plain observable)', function() {
       it('renders successfully', function() {
-        ReactDOM.render(React.createElement(FooComponent, {name: observable}), mountPoint);
+        render({name: observable});
         expect(getRenderedText()).toEqual("Welcome, Guest!");
       });
 

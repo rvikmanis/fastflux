@@ -1,8 +1,18 @@
-var assign = require('object-assign');
+var assign_ = require('object-assign');
 
-module.exports = {
-  assign: assign
-};
+
+function _fi(fn, a) {
+  return v => fn(v, a);
+}
+
+
+function assign() {
+  if (arguments.length === 1)
+    return _fi(assign_, arguments[0]);
+
+  return assign_.apply(null, arguments);
+}
+module.exports.assign = assign;
 
 
 function id(x) { return x }
@@ -34,13 +44,19 @@ function each(array, fn) {
 module.exports.each = each;
 
 
-function map(array, mapper) {
+function map_(array, mapper) {
   if (typeof array.map === "function")
     return array.map(mapper);
 
   var r = [];
   each(array, (v, i) => r.push(mapper(v, i)));
   return r;
+}
+function map() {
+  if (arguments.length === 1)
+    return _fi(map_, arguments[0]);
+
+  return map_.apply(null, arguments);
 }
 module.exports.map = map;
 
@@ -90,8 +106,10 @@ function pairs(obj) {
 module.exports.pairs = pairs;
 
 
-function chain(value, fns) {
-  return reduce(fns, (v, fn) => fn(v), value)
+function chain(value) {
+  var v = value;
+  for (var i=1; i<arguments.length; i++) v = arguments[i](v);
+  return v;
 }
 module.exports.chain = chain;
 
