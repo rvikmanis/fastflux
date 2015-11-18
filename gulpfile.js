@@ -13,7 +13,9 @@ var config = {
 };
 
 gulp.task('clean:webpack', function(callback) {
-  del(['dist'], function() { callback() });
+  del(['dist'], function() {
+    callback()
+  });
 });
 
 gulp.task('clean:node', function (callback) {
@@ -28,13 +30,7 @@ gulp.task('clean:test', function(callback) {
     })
 });
 
-gulp.task('clean:all',
-          ['clean:node', 'clean:webpack', 'clean:test'],
-          function(callback) {
-            del(['node_modules'], function() {
-              callback()
-            })
-          });
+gulp.task('clean', ['clean:node', 'clean:webpack', 'clean:test']);
 
 gulp.task('build:node', ['clean:node'], function () {
     return gulp.src(["src/**/*.js", "!src/browser/**/*"])
@@ -50,13 +46,13 @@ gulp.task("build:webpack", ["clean:webpack"], function (callback) {
     });
 });
 
-gulp.task('build:all', ['build:node', 'build:webpack']);
+gulp.task('build', ['build:node', 'build:webpack']);
 
-gulp.task("watch", ["build:all"], function () {
-    gulp.watch(["src/**/*"], ["build:all"]);
+gulp.task("watch", ["build"], function () {
+    gulp.watch(["src/**/*"], ["build"]);
 });
 
-gulp.task('test:pre', ['build:node'], function () {
+gulp.task('test:pre', ['build:node', 'clean:test'], function () {
   return gulp.src(['core/*.js'])
     .pipe(istanbul())
     .pipe(istanbul.hookRequire());
