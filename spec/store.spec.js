@@ -111,11 +111,11 @@ describe('Store:', function() {
 
       describe('#observe(callback: function)', function() {
         it('adds callback to listeners', function() {
-          store.observe(observer);
+          store.subscribe(observer);
           expect(store._listeners).toContain(observer);
         });
         it('raises an error when trying to add the same callback more than once', function() {
-          expect(function() { store.observe(observer) }).toThrow()
+          expect(function() { store.subscribe(observer) }).toThrow()
         });
       });
 
@@ -166,11 +166,11 @@ describe('Store:', function() {
 
       describe('#unobserve(callback: function)', function() {
         it('removes callback from listeners', function() {
-          store.unobserve(observer);
+          store.unsubscribe(observer);
           expect(store._listeners).not.toContain(observer);
         });
         it('raises an error when trying to remove something that is not a callback', function() {
-          expect(function() { store.unobserve(observer) }).toThrow()
+          expect(function() { store.unsubscribe(observer) }).toThrow()
         });
       });
 
@@ -217,7 +217,7 @@ describe('Store:', function() {
 
       describe('#observe(callback: function)', function() {
         it('adds callback to listeners', function() {
-          store.observe(observer);
+          store.subscribe(observer);
           expect(store._listeners).toContain(observer);
         });
       });
@@ -298,7 +298,7 @@ describe('Store:', function() {
 
       describe('#unobserve(callback: function)', function() {
         it('removes callback from listeners', function() {
-          store.unobserve(observer);
+          store.unsubscribe(observer);
           expect(store._listeners).not.toContain(observer);
         });
       });

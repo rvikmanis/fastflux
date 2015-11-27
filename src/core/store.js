@@ -51,8 +51,10 @@ Store.prototype.send = function send(message, context) {
       newState.equals(this._state)
   ) return;
 
-  this._state = newState;
-  Observable.prototype.emit.call(this, this._state);
+  if (newState !== void 0) {
+    this._state = newState;
+    Observable.prototype.emit.call(this, this._state);
+  }
 };
 
 Store.prototype.getState = function getState() {

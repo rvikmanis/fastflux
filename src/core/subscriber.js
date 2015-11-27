@@ -38,13 +38,13 @@ module.exports.createSubscriber = function createSubscriber(wrappedComponent) {
           updated[k] = state;
           this.setState(updated);
         };
-        observable.observe(updater);
+        observable.subscribe(updater);
       }
     }},
 
     componentWillUnmount: {value: function() {
       for (let k in this.updaters) {
-        this.observableProps[k].unobserve(this.updaters[k]);
+        this.observableProps[k].unsubscribe(this.updaters[k]);
         delete this.updaters[k];
       }
     }},
