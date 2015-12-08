@@ -1,3 +1,8 @@
-node_modules
-coverage
+/node_modules
+/coverage
+/docs
+/dist
+/core
+/utils
+/index.js
 .idea

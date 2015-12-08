@@ -54,31 +54,50 @@ describe('Store:', function() {
 
     describe('(When attempting to pass wrong args or call illegal methods)', function() {
 
-      describe('#createStore(state: undefined, reducers: undefined)', function() {
+      describe('#createStore({getInitialState: undefined, reducers: undefined})', function() {
         it('raises an error', function() {
           expect(function() {createStore()}).toThrow();
         });
       });
 
-      describe('#createStore(state: any, reducers: undefined)', function() {
+      describe('#createStore({getInitialState: function, reducers: undefined})', function() {
         it('raises an error', function() {
-          expect(function() {createStore(null)}).toThrow();
+          expect(function() {createStore({getInitialState: function() { return null }})}).toThrow();
         });
       });
 
-      describe('#createStore(state: undefined, reducers: function|object)', function() {
+      describe('#createStore({getInitialState: undefined, reducers: function|object})', function() {
         it('raises an error', function() {
-          expect(function() {createStore(undefined, REDUCERS.simple)}).toThrow();
-          expect(function() {createStore(undefined, {simple: REDUCERS.simple})}).toThrow();
+          expect(function() {createStore({
+            reducers: REDUCERS.simple
+          })}).toThrow();
+          expect(function() {createStore({
+            reducers: {simple: REDUCERS.simple}
+          })}).toThrow();
         });
       });
 
       describe('#emit(...any)', function() {
         it('raises an error', function() {
-          var store = createStore({}, REDUCERS.simple);
+          var store = createStore({
+            getInitialState: function() { return {} },
+            reducers: REDUCERS.simple
+          });
           expect(function() { store.emit() }).toThrow();
           expect(function() { store.emit({}) }).toThrow();
           expect(function() { store.emit("foo", "bar") }).toThrow();
+        });
+      });
+
+      describe('#setState(any)', function() {
+        it('raises an error', function() {
+          var store = createStore({
+            getInitialState: function() { return {} },
+            reducers: REDUCERS.simple
+          });
+          expect(function() { store.setState() }).toThrow();
+          expect(function() { store.setState({}) }).toThrow();
+          expect(function() { store.setState("foobar") }).toThrow();
         });
       });
 
@@ -99,17 +118,20 @@ describe('Store:', function() {
         };
       });
 
-      describe('#createStore(state: any, reducer: function)', function() {
+      describe('#createStore({getInitialState: function, reducer: function})', function() {
 
         it('creates store with initial state and one reducer', function() {
-          store = createStore({}, reducer);
+          store = createStore({
+            getInitialState: function() { return {} },
+            reducer: reducer
+          });
           expect(store.getState()).toEqual({});
           expect(store._reducers).toBe(reducer);
         });
 
       });
 
-      describe('#observe(callback: function)', function() {
+      describe('#subscribe(callback: function)', function() {
         it('adds callback to listeners', function() {
           store.subscribe(observer);
           expect(store._listeners).toContain(observer);
@@ -139,16 +161,10 @@ describe('Store:', function() {
         it('calls reducer with state and message for each message it gets', function() {
           expect(store._reducers.calls.count()).toBe(4);
           expect(store._reducers.calls.allArgs()).toEqual([
-           [{}, {type: "foo"}],
-           [{lastMessage: {type: "foo"}}, {type: "bar"}],
-           [{lastMessage: {type: "bar"}}, {type: "bar"}],
-           [{lastMessage: {type: "bar"}}, {type: "baz"}]
-          ]);
-        });
-
-        it('passes 2nd argument or empty object to reducer\'s "this" context', function() {
-          expect(allContext(store._reducers.calls)).toEqual([
-           {}, {}, ctx, {}
+           [{}, {type: "foo"}, null],
+           [{lastMessage: {type: "foo"}}, {type: "bar"}, null],
+           [{lastMessage: {type: "bar"}}, {type: "bar"}, ctx],
+           [{lastMessage: {type: "bar"}}, {type: "baz"}, null]
           ]);
         });
 
@@ -164,7 +180,7 @@ describe('Store:', function() {
 
       });
 
-      describe('#unobserve(callback: function)', function() {
+      describe('#unsubscribe(callback: function)', function() {
         it('removes callback from listeners', function() {
           store.unsubscribe(observer);
           expect(store._listeners).not.toContain(observer);
@@ -208,14 +224,17 @@ describe('Store:', function() {
       describe('#createStore(state: any, reducers: {messageType: function})', function() {
 
         it('creates store with initial state and multiple reducers', function() {
-          store = createStore(initialState, reducers);
+          store = createStore({
+            getInitialState: function() { return initialState },
+            reducers: reducers
+          });
           expect(store.getState()).toEqual(initialState);
           expect(store._reducers).toEqual(reducers);
         });
 
       });
 
-      describe('#observe(callback: function)', function() {
+      describe('#subscribe(callback: function)', function() {
         it('adds callback to listeners', function() {
           store.subscribe(observer);
           expect(store._listeners).toContain(observer);
@@ -250,35 +269,21 @@ describe('Store:', function() {
              expect(store._reducers.clear.calls.count()).toBe(1);
 
              expect(store._reducers.append.calls.allArgs()).toEqual([
-              [initialState, {type: "append", item: 10}],
-              [{sum: null, items: [10]}, {type: "append", item: 5}],
-              [{sum: 15, items: [10, 5]}, {type: "append", item: 19}],
-              [initialState, {type: "append", item: 42}]
+              [initialState, {type: "append", item: 10}, null],
+              [{sum: null, items: [10]}, {type: "append", item: 5}, null],
+              [{sum: 15, items: [10, 5]}, {type: "append", item: 19}, null],
+              [initialState, {type: "append", item: 42}, null]
              ]);
 
              expect(store._reducers.sum.calls.allArgs()).toEqual([
-              [{sum: null, items: [10, 5]}, {type: "sum"}],
-              [{sum: null, items: [10, 5, 19]}, {type: "sum"}],
-              [initialState, {type: "sum"}]
+              [{sum: null, items: [10, 5]}, {type: "sum"}, ctx],
+              [{sum: null, items: [10, 5, 19]}, {type: "sum"}, null],
+              [initialState, {type: "sum"}, null]
              ]);
 
              expect(store._reducers.clear.calls.allArgs()).toEqual([
-              [{sum: 34, items: [10, 5, 19]}, {type: "clear"}]
+              [{sum: 34, items: [10, 5, 19]}, {type: "clear"}, null]
              ]);
-        });
-
-        it('passes 2nd argument or empty object to reducer\'s "this" context', function() {
-          expect(allContext(store._reducers.append.calls)).toEqual([
-           {}, {}, {}, {}
-          ]);
-
-          expect(allContext(store._reducers.sum.calls)).toEqual([
-           {foobaz: "bar"}, {}, {}
-          ]);
-
-          expect(allContext(store._reducers.clear.calls)).toEqual([
-           {}
-          ]);
         });
 
         it('emits state to all observers if state has changed', function() {
@@ -296,7 +301,7 @@ describe('Store:', function() {
 
       });
 
-      describe('#unobserve(callback: function)', function() {
+      describe('#unsubscribe(callback: function)', function() {
         it('removes callback from listeners', function() {
           store.unsubscribe(observer);
           expect(store._listeners).not.toContain(observer);

@@ -1,8 +1,31 @@
-const {isObservable, assign} = require('../utils');
-const {Component, createElement: el} = require('react');
+import {isObservable, isObservableState, assign} from '../utils/index.js';
+import {Component, createElement} from 'react';
 
 
-module.exports.createSubscriber = function createSubscriber(wrappedComponent) {
+/**
+ * Higher-order component that automatically subscribes to
+ * Observable props upon mounting, and unsubscribes before unmounting
+ *
+ * @example
+ * const Label = createSubscriber(class extends React.Component {
+ *   static defaultProps = {text: "Foobar"};
+ *   render() {
+ *     return <div>{this.props.text}</div>;
+ *   }
+ * });
+ *
+ * let labelText = new Observable;
+ *
+ * // Renders label "Foobar" with text coming from `defaultProps`
+ * React.render(React.createElement(Label, {text: labelText}), mountPoint);
+ *
+ * // Text gets changed to "Foobaz" after 1 second
+ * setTimeout(() => labelText.emit("Foobaz"), 1000);
+ *
+ * @param {React.Component} wrappedComponent - The component to wrap
+ * @returns {React.Component}
+ */
+export function createSubscriber(wrappedComponent) {
 
   let wrapper = function(props, context) {
     Component.call(this, props, context);
@@ -18,7 +41,7 @@ module.exports.createSubscriber = function createSubscriber(wrappedComponent) {
       if (!isObservable(prop)) this.normalProps[k] = prop;
       else {
         this.observableProps[k] = prop;
-        if (typeof prop.getState === "function")
+        if (isObservableState(prop))
           state[k] = prop.getState()
       }
     }
@@ -68,8 +91,10 @@ module.exports.createSubscriber = function createSubscriber(wrappedComponent) {
     }},
 
     render: {value: function() {
-      return el(wrappedComponent,
-                assign({}, this.normalProps, this.state))
+      return createElement(
+        wrappedComponent,
+        assign({}, this.normalProps, this.state)
+      )
     }}
 
   });

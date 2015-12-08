@@ -6,6 +6,8 @@ var istanbul = require('gulp-istanbul');
 var jasmine = require('gulp-jasmine');
 var webpack = require("webpack");
 var del = require("del");
+var exec = require('child_process').exec;
+var pkg = require('./package');
 
 var config = {
   babel: require('./config/babel'),
@@ -30,7 +32,13 @@ gulp.task('clean:test', function(callback) {
     })
 });
 
-gulp.task('clean', ['clean:node', 'clean:webpack', 'clean:test']);
+gulp.task('clean:docs', function(callback) {
+    del(['docs'], function() {
+      callback()
+    })
+});
+
+gulp.task('clean', ['clean:node', 'clean:webpack', 'clean:test', 'clean:docs']);
 
 gulp.task('build:node', ['clean:node'], function () {
     return gulp.src(["src/**/*.js", "!src/browser/**/*"])
@@ -45,8 +53,27 @@ gulp.task("build:webpack", ["clean:webpack"], function (callback) {
       callback()
     });
 });
+//
+// gulp.task("build:docs", ["clean:docs"], function(callback) {
+//     exec("./node_modules/.bin/documentation"+
+//          " src/index.js -f html -t ./doctheme -o docs"+
+//          " --name "+pkg.name+" --project-version v"+pkg.version,
+//       function(err) {
+//         callback(err);
+//       });
+// });
 
-gulp.task('build', ['build:node', 'build:webpack']);
+gulp.task("build:docs", ["clean:docs"], function(callback) {
+    exec("./node_modules/.bin/esdoc"+
+         " -c config/esdoc.json",
+      function(err) {
+        callback(err);
+      });
+});
+
+
+
+gulp.task('build', ['build:node', 'build:webpack', 'build:docs']);
 
 gulp.task("watch", ["build"], function () {
     gulp.watch(["src/**/*"], ["build"]);
@@ -62,5 +89,5 @@ gulp.task('test', ['test:pre'], function () {
   return gulp.src('spec/**/*')
    .pipe(jasmine({reporter: new (require('jasmine-spec-reporter'))}))
    .pipe(istanbul.writeReports())
-   .pipe(istanbul.enforceThresholds({ thresholds: { global: 90 } }));
+   .pipe(istanbul.enforceThresholds({ thresholds: { global: 85 } }));
 });

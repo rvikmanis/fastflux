@@ -39,9 +39,12 @@ describe('Subscriber:', function() {
     var render;
 
     beforeAll(function() {
-      store = createStore("World", function(state, message) {
-        if (message.type === "update") state = message.state;
-        return state;
+      store = createStore({
+        getInitialState: function() { return "World" },
+        reducer: function(state, message) {
+          if (message.type === "update") state = message.state;
+          return state;
+        }
       });
       observable = new Observable;
 

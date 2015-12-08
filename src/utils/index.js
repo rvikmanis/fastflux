@@ -1,11 +1,35 @@
-var assign = module.exports.assign = require('object-assign');
+import assign from 'object-assign';
+export {assign};
 
-var clone = module.exports.clone = function(object) {
+/**
+ * Shorthand for `assign({}, object)`
+ * @param {Object} object
+ * @returns {Object} cloned `object`
+ * @ignore
+ */
+export function clone(object) {
   return assign({}, object);
 }
 
-var isObservable = module.exports.isObservable = function(object) {
-  return typeof object === 'object' &&
-   typeof object.subscribe === 'function' &&
-   typeof object.unsubscribe === 'function'
-};
+/**
+ * True if `value.subscribe` and `value.unsubscribe` are methods
+ * @function
+ * @param {Any} value
+ * @returns {boolean}
+ */
+export function isObservable(value) {
+  return value != null &&
+   typeof value.subscribe === 'function' &&
+   typeof value.unsubscribe === 'function'
+}
+
+/**
+ * True if {@link isObservable}(`value`) and `value.getState` is a method
+ * @function
+ * @param {Any} value
+ * @returns {boolean}
+ */
+export function isObservableState(value) {
+  return isObservable(value) &&
+   typeof value.getState === 'function'
+}
