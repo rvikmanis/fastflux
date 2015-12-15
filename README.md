@@ -98,8 +98,10 @@ class NewItemInput extends Component {
 
   onKeyDown = (e) => {
     // Invoke action!
-    addItem(e.target.value);
-    this.setState({value: this.INITIAL_VALUE});
+    if (e.key === "Enter") {
+      addItem(e.target.value);
+      this.setState({value: this.INITIAL_VALUE});
+    }
   };
 
   onChange = (e) => {
