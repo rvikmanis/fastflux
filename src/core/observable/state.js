@@ -4,9 +4,16 @@ import Observable from './base.js';
 /**
  * @example
  * let name = new ObservableState("Foo");
- * name.subscribe(data => console.log("Received:", data));
  *
- * name.setState("Foobar");
+ * name.getData(initial => console.log("Initial:", initial));
+ * //> Initial: Foo
+ *
+ * name.subscribe(data => {
+ *   console.log("Received:", data);
+ *   name.getState(currentState => assert(data === currentState))
+ * });
+ *
+ * name.emit("Foobar");
  * //> Received: Foobar
  *
  */
@@ -23,14 +30,14 @@ export default class ObservableState extends Observable {
 
 
   /**
-   * Return current state or invoke callback with it
+   * Return current state or asynchronously invoke callback
    *
-   * @example <caption>Without arguments</caption>
+   * @example <caption>Without arguments - synchronous</caption>
    * let name = new ObservableState("Guest");
    * let val = name.getState();
    * assert(val === "Guest");
    *
-   * @example <caption>With callback</caption>
+   * @example <caption>With callback - asynchronous</caption>
    * let name = new ObservableState("Guest");
    * let returnVal = name.getState(val => {
    *   assert(val === "Guest")
@@ -42,7 +49,7 @@ export default class ObservableState extends Observable {
    */
   getState(callback) {
     if (typeof callback === "function") {
-      callback(this._state);
+      setTimeout(() => callback(this._state));
       return
     }
     return this._state
@@ -50,20 +57,14 @@ export default class ObservableState extends Observable {
 
 
   /**
-   * Set state to new value
+   * Same as {@link Observable#emit}. Additionally sets
+   * current state to `value`
+   *
    * @param {Any} value - new state
    */
-  setState(value) {
+  emit(value) {
     this._state = value != null ? value : null;
-    super.emit(value);
-  }
-
-
-  /**
-   * @ignore
-   */
-  emit() {
-    throw new Error("Disabled")
+    super.emit(this._state);
   }
 
 

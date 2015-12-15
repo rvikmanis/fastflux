@@ -26,5 +26,4 @@
 export {Store, createStore} from './core/store';
 export {Observable, ObservableState} from './core/observable';
 export {createSubscriber} from './core/subscriber';
-export {isObservable, isObservableState} from './utils';
-export {Action, createAction} from './core/action';
+export {createAction} from './core/action';

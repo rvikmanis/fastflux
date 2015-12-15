@@ -53,25 +53,14 @@ gulp.task("build:webpack", ["clean:webpack"], function (callback) {
       callback()
     });
 });
-//
-// gulp.task("build:docs", ["clean:docs"], function(callback) {
-//     exec("./node_modules/.bin/documentation"+
-//          " src/index.js -f html -t ./doctheme -o docs"+
-//          " --name "+pkg.name+" --project-version v"+pkg.version,
-//       function(err) {
-//         callback(err);
-//       });
-// });
 
 gulp.task("build:docs", ["clean:docs"], function(callback) {
     exec("./node_modules/.bin/esdoc"+
-         " -c config/esdoc.json",
+         " -c esdoc.json",
       function(err) {
         callback(err);
       });
 });
-
-
 
 gulp.task('build', ['build:node', 'build:webpack', 'build:docs']);
 
@@ -89,5 +78,5 @@ gulp.task('test', ['test:pre'], function () {
   return gulp.src('spec/**/*')
    .pipe(jasmine({reporter: new (require('jasmine-spec-reporter'))}))
    .pipe(istanbul.writeReports())
-   .pipe(istanbul.enforceThresholds({ thresholds: { global: 85 } }));
+   .pipe(istanbul.enforceThresholds({ thresholds: { global: 80 } }));
 });

@@ -1,31 +1,32 @@
-import {isObservable, isObservableState, assign} from '../utils/index.js';
+import {isObservableState, assign} from '../utils/index.js';
 import {Component, createElement} from 'react';
+import ObservableState from './observable/state.js';
 
 
 /**
  * Higher-order component that automatically subscribes to
- * Observable props upon mounting, and unsubscribes before unmounting
+ * {@link ObservableState} props.
  *
  * @example
- * const Label = createSubscriber(class extends React.Component {
- *   static defaultProps = {text: "Foobar"};
+ * let text = new ObservableState("Foo");
+ *
+ * class Label extends React.Component {
  *   render() {
  *     return <div>{this.props.text}</div>;
  *   }
- * });
+ * }
+ * Label = createSubscriber(Label);
  *
- * let labelText = new Observable;
+ * // Render <Label> with text "Foo"
+ * React.render(<Label text={text} />, mountPoint);
  *
- * // Renders label "Foobar" with text coming from `defaultProps`
- * React.render(React.createElement(Label, {text: labelText}), mountPoint);
+ * // After 1 second change text to "Bar"
+ * setTimeout(() => text.setState("Bar"), 1000);
  *
- * // Text gets changed to "Foobaz" after 1 second
- * setTimeout(() => labelText.emit("Foobaz"), 1000);
- *
- * @param {React.Component} wrappedComponent - The component to wrap
+ * @param {React.Component} component - the component to wrap
  * @returns {React.Component}
  */
-export function createSubscriber(wrappedComponent) {
+export function createSubscriber(component) {
 
   let wrapper = function(props, context) {
     Component.call(this, props, context);
@@ -38,11 +39,10 @@ export function createSubscriber(wrappedComponent) {
 
     for (let k in this.props) {
       let prop = this.props[k];
-      if (!isObservable(prop)) this.normalProps[k] = prop;
+      if (!isObservableState(prop)) this.normalProps[k] = prop;
       else {
         this.observableProps[k] = prop;
-        if (isObservableState(prop))
-          state[k] = prop.getState()
+        state[k] = prop.getState()
       }
     }
 
@@ -75,16 +75,16 @@ export function createSubscriber(wrappedComponent) {
     componentWillReceiveProps: {value: function(nextProps) {
       for (let k in this.observableProps) {
         if (nextProps[k] !== this.observableProps[k])
-          throw new Error("Cannot change observable prop once initialized. " +
-           "To change the value, call emit")
+          throw new Error("Cannot change an observable state prop once initialized. " +
+           "To change the value, call setState")
       }
       for (let k in this.normalProps) {
-        if (nextProps[k] === undefined) delete this.normalProps[k];
+        if (nextProps[k] === void 0) delete this.normalProps[k];
       }
       for (let k in nextProps) {
         let prop = nextProps[k];
         if (!(k in this.observableProps)) {
-          if (!isObservable(prop)) this.normalProps[k] = prop;
+          if (!isObservableState(prop)) this.normalProps[k] = prop;
           else throw new Error("Cannot change non-observable prop to observable once initialized")
         }
       }
@@ -92,7 +92,7 @@ export function createSubscriber(wrappedComponent) {
 
     render: {value: function() {
       return createElement(
-        wrappedComponent,
+        component,
         assign({}, this.normalProps, this.state)
       )
     }}

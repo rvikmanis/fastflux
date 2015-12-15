@@ -16,6 +16,7 @@ export function clone(object) {
  * @function
  * @param {Any} value
  * @returns {boolean}
+ * @ignore
  */
 export function isObservable(value) {
   return value != null &&
@@ -28,6 +29,7 @@ export function isObservable(value) {
  * @function
  * @param {Any} value
  * @returns {boolean}
+ * @ignore
  */
 export function isObservableState(value) {
   return isObservable(value) &&

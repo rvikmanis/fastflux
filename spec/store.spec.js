@@ -168,14 +168,17 @@ describe('Store:', function() {
           ]);
         });
 
-        it('emits state to all observers regardless of actual changes', function() {
-          expect(observedStateTransitions.length).toBe(4);
-          expect(observedStateTransitions).toEqual([
-           {lastMessage: {type: "foo"}},
-           {lastMessage: {type: "bar"}},
-           {lastMessage: {type: "bar"}},
-           {lastMessage: {type: "baz"}}
-          ]);
+        it('emits state to all observers regardless of actual changes', function(done) {
+          setTimeout(function() {
+            expect(observedStateTransitions.length).toBe(4);
+            expect(observedStateTransitions).toEqual([
+             {lastMessage: {type: "foo"}},
+             {lastMessage: {type: "bar"}},
+             {lastMessage: {type: "bar"}},
+             {lastMessage: {type: "baz"}}
+            ]);
+            done()
+          }, 100)
         });
 
       });
@@ -286,17 +289,20 @@ describe('Store:', function() {
              ]);
         });
 
-        it('emits state to all observers if state has changed', function() {
-          expect(observedStateTransitions.length).toBe(7);
-          expect(observedStateTransitions).toEqual([
-           {sum: null, items: [10]},
-           {sum: null, items: [10, 5]},
-           {sum: 15, items: [10, 5]},
-           {sum: null, items: [10, 5, 19]},
-           {sum: 34, items: [10, 5, 19]},
-           initialState,
-           {sum: null, items: [42]}
-          ]);
+        it('emits state to all observers if state has changed', function(done) {
+          setTimeout(function() {
+            expect(observedStateTransitions.length).toBe(7);
+            expect(observedStateTransitions).toEqual([
+             {sum: null, items: [10]},
+             {sum: null, items: [10, 5]},
+             {sum: 15, items: [10, 5]},
+             {sum: null, items: [10, 5, 19]},
+             {sum: 34, items: [10, 5, 19]},
+             initialState,
+             {sum: null, items: [42]}
+            ]);
+            done()
+          }, 100);
         });
 
       });

@@ -5,37 +5,38 @@ import ObservableState from './observable/state.js';
  * *This class is abstract*
  *
  *
- * ## Creating a store
+ * ## Implementing `Store`
  * A store:
- *  1. Must implement instance method `getInitialState` of type:
+ *  1. Must have instance method `getInitialState` with signature:
  *
- *         () -> Any
+ *         function(): Any<S>
  *
- *  2. Must define either one of
- *     * static method `reducer` of type:
+ *  2. Must have either one of:
+ *     * static method `reducer` with signature:
  *
- *           <S>(state: S, message: Message) -> S
+ *           function(state: Any<S>, message: Message): Any<S>
  *
- *     * static property `reducers` of type:
+ *     * static property `reducers` with signature:
  *
- *           {[string]: <S>(state: S, message: Message) -> S}
+ *           {[string]: function(state: Any<S>, message: Message): Any<S>}
  *
  *
  * <br />
- * #### Reducer function variant:
+ * #### Single reducer variant:
  *
  *     let logger = new class extends Store {
  *       getInitialState() { return [] }
  *       static reducer(state, {type, value}) {
  *
- *         if (type === "add")
+ *         if (type === "add") {}
  *           return state.concat([value]);
+ *         }
  *
  *       }
  *     }
  *
  *
- * #### Reducers object variant:
+ * #### Object mapping {@link Message}#type to reducers:
  *
  *     let logger = new class extends Store {
  *       getInitialState() { return [] }
@@ -53,36 +54,36 @@ import ObservableState from './observable/state.js';
  * <br />
  *
  * -----------
- * @example <caption>Multiple reducers</caption>
+ * @example
  * let counter = new class extends Store {
  *   getInitialState() { return 0 }
  *   static reducers = {
- *     inc(state) { return ++state; },
- *     dec(state) { return --state; }
+ *     inc(state, {amount}) { return state + amount; },
+ *     dec(state, {amount}) { return state - amount; }
  *   }
  * }
  *
- * function increment() {
- *   counter.send({type: "inc"})
+ * function increment(amount=1) {
+ *   counter.send({type: "inc", amount})
  * }
  *
- * function decrement() {
- *   counter.send({type: "dec"})
+ * function decrement(amount=1) {
+ *   counter.send({type: "dec", amount})
  * }
  *
  * counter.subscribe(n => console.log("Counter value:", n));
  *
  * increment(); //> Counter value: 1
  * increment(); //> Counter value: 2
- * increment(); //> Counter value: 3
+ * increment(2); //> Counter value: 4
  *
- * decrement(); //> Counter value: 2
+ * decrement(12); //> Counter value: -8
  */
 export class Store extends ObservableState {
 
 
   /**
-   * @throws {Error} when instantiating the abstract {@link Store} directly
+   * @throws {Error} when trying to instantiate the abstract {@link Store} directly
    * @throws {Error} when no reducers are defined
    * @throws {Error} when `getInitialState` is not implemented
    */
@@ -103,6 +104,8 @@ export class Store extends ObservableState {
     this._reducers = reducers;
     this._state = initialState;
 
+    this._isProcessing = false;
+
     const send = this.send;
     this.send = (message, context) => send.call(this, message, context)
   }
@@ -118,25 +121,27 @@ export class Store extends ObservableState {
 
 
   /**
-   * @ignore
-   */
-  setState() {
-    throw new Error("Disabled")
-  }
-
-
-  /**
    * Send a message. Bound method
    * @method
    * @param {Message} message
    * @param {Any} [context]
    */
   send(message, context) {
-    let reducer;
+    while (true) {
+      if (!this._isProcessing) break
+    }
+    this._process(message, context)
+  }
 
+  _process(message, context) {
+    this._isProcessing = true;
+
+    let reducer;
     if (typeof this._reducers === "object") {
-      if (!this._reducers.hasOwnProperty(message.type))
-        return;
+      if (!this._reducers.hasOwnProperty(message.type)) {
+        this._isProcessing = false;
+        return
+      }
       reducer = this._reducers[message.type];
     }
     else reducer = this._reducers;
@@ -151,11 +156,24 @@ export class Store extends ObservableState {
     if (newState != null &&
         typeof newState.equals === "function" &&
         newState.equals(oldState)
-    ) return;
+    ) {
+      this._isProcessing = false;
+      return
+    }
+
 
     if (newState !== void 0) {
-      super.setState(newState);
+      super.emit(newState);
     }
+
+    this._isProcessing = false
+  }
+
+  /**
+   * @ignore
+   */
+  emit() {
+    throw new Error("Disabled");
   }
 
 
@@ -163,7 +181,12 @@ export class Store extends ObservableState {
 
 
 /**
- * {@link Store} factory function
+ * Dynamically extends {@link Store} and instantiates the new class.
+ *
+ * `options.getInitialState` and either `options.reducer` or `options.reducers` are required.<br />
+ * When both are defined, `options.reducers` takes precedence.<br />
+ * Type requirements are interchangable, meaning either can
+ * take {@link Object} or {@link function}.
  * @example
  * let counter = createStore({
  *   getInitialState() { return 0 },
@@ -172,13 +195,14 @@ export class Store extends ObservableState {
  *     dec(state) { return --state }
  *   }
  * })
- * @function
- * @param {Object} config
+ * @param {Object} options
+ * @param {function(): Any<S>} options.getInitialState
+ * @param {function(state: Any<S>, message: Message): Any<S>} options.reducer
+ * @param {Object} options.reducers - maps {@link Message}#type to reducers
  * @returns {Store}
  */
 export function createStore({getInitialState, reducer, reducers} = {}) {
 
-  // single reducer function or object mapping message types to reducers
   if (reducers == null) {
     reducers = reducer
   }

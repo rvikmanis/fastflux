@@ -10,7 +10,7 @@ var ReactDOM = require('react-dom');
 var utils = require('../utils');
 var createSubscriber = require('../core/subscriber').createSubscriber;
 var createStore = require('../core/store').createStore;
-var Observable = require('../core/observable').Observable;
+var ObservableState = require('../core/observable').ObservableState;
 
 
 function getRenderedText() {
@@ -46,7 +46,7 @@ describe('Subscriber:', function() {
           return state;
         }
       });
-      observable = new Observable;
+      observable = new ObservableState("Guest");
 
       mountPoint = document.createElement("div");
       document.body.appendChild(mountPoint);
@@ -59,15 +59,18 @@ describe('Subscriber:', function() {
     });
 
 
-    describe('(With store as observable)', function() {
+    describe('(With store as prop)', function() {
       it('renders successfully', function() {
         render({name: store, greeting: "Hello"});
         expect(getRenderedText()).toEqual("Hello, World!");
       });
 
-      it('updates successfully', function() {
+      it('updates successfully', function(done) {
         store.send({"type": "update", state: "friend"});
-        expect(getRenderedText()).toEqual("Hello, friend!");
+        setTimeout(function() {
+          expect(getRenderedText()).toEqual("Hello, friend!");
+          done()
+        }, 100);
       });
 
       it('handles normal prop change', function() {
@@ -132,15 +135,18 @@ describe('Subscriber:', function() {
       });
     });
 
-    describe('(With plain observable)', function() {
+    describe('(With observable state as prop)', function() {
       it('renders successfully', function() {
         render({name: observable});
         expect(getRenderedText()).toEqual("Welcome, Guest!");
       });
 
-      it('updates successfully', function() {
+      it('updates successfully', function(done) {
         observable.emit("Rudolfs");
-        expect(getRenderedText()).toEqual("Welcome, Rudolfs!");
+        setTimeout(function() {
+          expect(getRenderedText()).toEqual("Welcome, Rudolfs!");
+          done()
+        }, 100)
       });
 
       it('unmounts successfully', function() {

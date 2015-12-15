@@ -1,5 +1,5 @@
 (function(window) {
 
-  window.fastflux = window.fastflux || require("../index");
+  window.Fastflux = window.Fastflux || require("../index");
 
 })(window);
