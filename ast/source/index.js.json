@@ -1,0 +1,617 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 790,
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 30,
+      "column": 0
+    }
+  },
+  "sourceType": "module",
+  "body": [
+    {
+      "type": "ExportNamedDeclaration",
+      "start": 568,
+      "end": 616,
+      "loc": {
+        "start": {
+          "line": 26,
+          "column": 0
+        },
+        "end": {
+          "line": 26,
+          "column": 48
+        }
+      },
+      "declaration": null,
+      "specifiers": [
+        {
+          "type": "ExportSpecifier",
+          "start": 576,
+          "end": 581,
+          "loc": {
+            "start": {
+              "line": 26,
+              "column": 8
+            },
+            "end": {
+              "line": 26,
+              "column": 13
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 576,
+            "end": 581,
+            "loc": {
+              "start": {
+                "line": 26,
+                "column": 8
+              },
+              "end": {
+                "line": 26,
+                "column": 13
+              }
+            },
+            "name": "Store",
+            "leadingComments": null
+          },
+          "exported": {
+            "type": "Identifier",
+            "start": 576,
+            "end": 581,
+            "loc": {
+              "start": {
+                "line": 26,
+                "column": 8
+              },
+              "end": {
+                "line": 26,
+                "column": 13
+              }
+            },
+            "name": "Store",
+            "leadingComments": [
+              {
+                "type": "Block",
+                "value": "*\n * @typedef {*} Any\n * @desc Describes any value\n ",
+                "start": 0,
+                "end": 56,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 0
+                  },
+                  "end": {
+                    "line": 4,
+                    "column": 3
+                  }
+                },
+                "range": [
+                  0,
+                  56
+                ]
+              },
+              {
+                "type": "Block",
+                "value": "*\n * @typedef {Object} Message\n * @property {string} type\n * @desc `Message` is a pure object type meeting the following criteria:\n *  * No methods;\n *  * Properties are either primitives\n      (numbers, strings, booleans etc.), {@link Array}s or pure {@link Object}s;\n *  * No circular references;\n *  * Has own property `Message#type` ({@link string})\n *\n * @example\n * let message = {\n *  type: \"something-descriptive\"\n * }\n ",
+                "start": 58,
+                "end": 490,
+                "loc": {
+                  "start": {
+                    "line": 6,
+                    "column": 0
+                  },
+                  "end": {
+                    "line": 20,
+                    "column": 3
+                  }
+                },
+                "range": [
+                  58,
+                  490
+                ]
+              },
+              {
+                "type": "Block",
+                "value": "*\n * @external {React.Component} https://www.npmjs.com/package/react\n ",
+                "start": 492,
+                "end": 566,
+                "loc": {
+                  "start": {
+                    "line": 22,
+                    "column": 0
+                  },
+                  "end": {
+                    "line": 24,
+                    "column": 3
+                  }
+                },
+                "range": [
+                  492,
+                  566
+                ]
+              }
+            ]
+          },
+          "leadingComments": null
+        },
+        {
+          "type": "ExportSpecifier",
+          "start": 583,
+          "end": 594,
+          "loc": {
+            "start": {
+              "line": 26,
+              "column": 15
+            },
+            "end": {
+              "line": 26,
+              "column": 26
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 583,
+            "end": 594,
+            "loc": {
+              "start": {
+                "line": 26,
+                "column": 15
+              },
+              "end": {
+                "line": 26,
+                "column": 26
+              }
+            },
+            "name": "createStore"
+          },
+          "exported": {
+            "type": "Identifier",
+            "start": 583,
+            "end": 594,
+            "loc": {
+              "start": {
+                "line": 26,
+                "column": 15
+              },
+              "end": {
+                "line": 26,
+                "column": 26
+              }
+            },
+            "name": "createStore"
+          }
+        }
+      ],
+      "source": {
+        "type": "Literal",
+        "start": 601,
+        "end": 615,
+        "loc": {
+          "start": {
+            "line": 26,
+            "column": 33
+          },
+          "end": {
+            "line": 26,
+            "column": 47
+          }
+        },
+        "value": "./core/store",
+        "rawValue": "./core/store",
+        "raw": "'./core/store'"
+      },
+      "leadingComments": [
+        {
+          "type": "Block",
+          "value": "*\n * @typedef {*} Any\n * @desc Describes any value\n ",
+          "start": 0,
+          "end": 56,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 4,
+              "column": 3
+            }
+          },
+          "range": [
+            0,
+            56
+          ]
+        },
+        {
+          "type": "Block",
+          "value": "*\n * @typedef {Object} Message\n * @property {string} type\n * @desc `Message` is a pure object type meeting the following criteria:\n *  * No methods;\n *  * Properties are either primitives\n      (numbers, strings, booleans etc.), {@link Array}s or pure {@link Object}s;\n *  * No circular references;\n *  * Has own property `Message#type` ({@link string})\n *\n * @example\n * let message = {\n *  type: \"something-descriptive\"\n * }\n ",
+          "start": 58,
+          "end": 490,
+          "loc": {
+            "start": {
+              "line": 6,
+              "column": 0
+            },
+            "end": {
+              "line": 20,
+              "column": 3
+            }
+          },
+          "range": [
+            58,
+            490
+          ]
+        },
+        {
+          "type": "Block",
+          "value": "*\n * @external {React.Component} https://www.npmjs.com/package/react\n ",
+          "start": 492,
+          "end": 566,
+          "loc": {
+            "start": {
+              "line": 22,
+              "column": 0
+            },
+            "end": {
+              "line": 24,
+              "column": 3
+            }
+          },
+          "range": [
+            492,
+            566
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExportNamedDeclaration",
+      "start": 617,
+      "end": 693,
+      "loc": {
+        "start": {
+          "line": 27,
+          "column": 0
+        },
+        "end": {
+          "line": 27,
+          "column": 76
+        }
+      },
+      "declaration": null,
+      "specifiers": [
+        {
+          "type": "ExportSpecifier",
+          "start": 625,
+          "end": 635,
+          "loc": {
+            "start": {
+              "line": 27,
+              "column": 8
+            },
+            "end": {
+              "line": 27,
+              "column": 18
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 625,
+            "end": 635,
+            "loc": {
+              "start": {
+                "line": 27,
+                "column": 8
+              },
+              "end": {
+                "line": 27,
+                "column": 18
+              }
+            },
+            "name": "Observable"
+          },
+          "exported": {
+            "type": "Identifier",
+            "start": 625,
+            "end": 635,
+            "loc": {
+              "start": {
+                "line": 27,
+                "column": 8
+              },
+              "end": {
+                "line": 27,
+                "column": 18
+              }
+            },
+            "name": "Observable"
+          }
+        },
+        {
+          "type": "ExportSpecifier",
+          "start": 637,
+          "end": 652,
+          "loc": {
+            "start": {
+              "line": 27,
+              "column": 20
+            },
+            "end": {
+              "line": 27,
+              "column": 35
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 637,
+            "end": 652,
+            "loc": {
+              "start": {
+                "line": 27,
+                "column": 20
+              },
+              "end": {
+                "line": 27,
+                "column": 35
+              }
+            },
+            "name": "ObservableState"
+          },
+          "exported": {
+            "type": "Identifier",
+            "start": 637,
+            "end": 652,
+            "loc": {
+              "start": {
+                "line": 27,
+                "column": 20
+              },
+              "end": {
+                "line": 27,
+                "column": 35
+              }
+            },
+            "name": "ObservableState"
+          }
+        },
+        {
+          "type": "ExportSpecifier",
+          "start": 654,
+          "end": 666,
+          "loc": {
+            "start": {
+              "line": 27,
+              "column": 37
+            },
+            "end": {
+              "line": 27,
+              "column": 49
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 654,
+            "end": 666,
+            "loc": {
+              "start": {
+                "line": 27,
+                "column": 37
+              },
+              "end": {
+                "line": 27,
+                "column": 49
+              }
+            },
+            "name": "Subscription"
+          },
+          "exported": {
+            "type": "Identifier",
+            "start": 654,
+            "end": 666,
+            "loc": {
+              "start": {
+                "line": 27,
+                "column": 37
+              },
+              "end": {
+                "line": 27,
+                "column": 49
+              }
+            },
+            "name": "Subscription"
+          }
+        }
+      ],
+      "source": {
+        "type": "Literal",
+        "start": 673,
+        "end": 692,
+        "loc": {
+          "start": {
+            "line": 27,
+            "column": 56
+          },
+          "end": {
+            "line": 27,
+            "column": 75
+          }
+        },
+        "value": "./core/observable",
+        "rawValue": "./core/observable",
+        "raw": "'./core/observable'"
+      }
+    },
+    {
+      "type": "ExportNamedDeclaration",
+      "start": 694,
+      "end": 745,
+      "loc": {
+        "start": {
+          "line": 28,
+          "column": 0
+        },
+        "end": {
+          "line": 28,
+          "column": 51
+        }
+      },
+      "declaration": null,
+      "specifiers": [
+        {
+          "type": "ExportSpecifier",
+          "start": 702,
+          "end": 718,
+          "loc": {
+            "start": {
+              "line": 28,
+              "column": 8
+            },
+            "end": {
+              "line": 28,
+              "column": 24
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 702,
+            "end": 718,
+            "loc": {
+              "start": {
+                "line": 28,
+                "column": 8
+              },
+              "end": {
+                "line": 28,
+                "column": 24
+              }
+            },
+            "name": "createSubscriber"
+          },
+          "exported": {
+            "type": "Identifier",
+            "start": 702,
+            "end": 718,
+            "loc": {
+              "start": {
+                "line": 28,
+                "column": 8
+              },
+              "end": {
+                "line": 28,
+                "column": 24
+              }
+            },
+            "name": "createSubscriber"
+          }
+        }
+      ],
+      "source": {
+        "type": "Literal",
+        "start": 725,
+        "end": 744,
+        "loc": {
+          "start": {
+            "line": 28,
+            "column": 31
+          },
+          "end": {
+            "line": 28,
+            "column": 50
+          }
+        },
+        "value": "./core/subscriber",
+        "rawValue": "./core/subscriber",
+        "raw": "'./core/subscriber'"
+      }
+    },
+    {
+      "type": "ExportNamedDeclaration",
+      "start": 746,
+      "end": 789,
+      "loc": {
+        "start": {
+          "line": 29,
+          "column": 0
+        },
+        "end": {
+          "line": 29,
+          "column": 43
+        }
+      },
+      "declaration": null,
+      "specifiers": [
+        {
+          "type": "ExportSpecifier",
+          "start": 754,
+          "end": 766,
+          "loc": {
+            "start": {
+              "line": 29,
+              "column": 8
+            },
+            "end": {
+              "line": 29,
+              "column": 20
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 754,
+            "end": 766,
+            "loc": {
+              "start": {
+                "line": 29,
+                "column": 8
+              },
+              "end": {
+                "line": 29,
+                "column": 20
+              }
+            },
+            "name": "createAction"
+          },
+          "exported": {
+            "type": "Identifier",
+            "start": 754,
+            "end": 766,
+            "loc": {
+              "start": {
+                "line": 29,
+                "column": 8
+              },
+              "end": {
+                "line": 29,
+                "column": 20
+              }
+            },
+            "name": "createAction"
+          }
+        }
+      ],
+      "source": {
+        "type": "Literal",
+        "start": 773,
+        "end": 788,
+        "loc": {
+          "start": {
+            "line": 29,
+            "column": 27
+          },
+          "end": {
+            "line": 29,
+            "column": 42
+          }
+        },
+        "value": "./core/action",
+        "rawValue": "./core/action",
+        "raw": "'./core/action'"
+      }
+    }
+  ]
+}

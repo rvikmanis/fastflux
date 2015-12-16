@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">src/core/observable/base.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  
+  
+  
+  
+  <script src="script/manual.js"></script>
+
+<link data-ice="userStyle" rel="stylesheet" href="user/css/0-custom.css">
+<link data-ice="userStyle" rel="stylesheet" href="user/css/1-prism.css">
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header><a href="./index.html" class="branding">Fastflux</a>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <a data-ice="repoURL" href="https://github.com/rvikmanis/fastflux.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Message">Message</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://www.npmjs.com/package/react">React.Component</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">core</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/store.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createAction">createAction</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createStore">createStore</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createSubscriber">createSubscriber</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">core/observable</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/base.js~Observable.html">Observable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/subscription.js~Subscription.html">Subscription</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/core/observable/base.js</h1>
+<pre class="line-numbers"><code class="language-js" data-ice="content">import ObservableState from &apos;./state&apos;;
+import Subscription from &apos;./subscription&apos;;
+
+/**
+ * @example
+ * let ready = new Observable;
+ * ready.subscribe(data =&gt; console.log(&quot;Received:&quot;, data));
+ *
+ * ready.emit(&quot;Foo&quot;);
+ * //&gt; Received: Foo
+ */
+export default class Observable&lt;T&gt; {
+
+  _listeners = [];
+
+  /**
+   * Register listener
+   * @param {function} listener
+   * @throws {Error} if `listener` is already subscribed to this observable
+   * @returns {Subscription}
+   */
+  subscribe(listener: (v: T) =&gt; void): void {
+    if (this._listeners.indexOf(listener) === -1) {
+      this._listeners.push(listener);
+      return new Subscription(this, listener);
+    }
+    else throw new Error(&quot;subscribe: cannot register twice&quot;);
+  }
+
+  /**
+   * True if `listener` has subscribed to `this` observable
+   * @param {function} listener
+   * @returns {boolean}
+   */
+  hasSubscribed(listener: (v: T) =&gt; void): boolean {
+    return this._listeners.indexOf(listener) !== -1
+  }
+
+  /**
+   * Unregister listener
+   * @param {function} listener
+   * @throws {Error} if `listener` is not registered
+   */
+  unsubscribe(listener: (v: T) =&gt; void): void {
+    var idx = this._listeners.indexOf(listener);
+    if (idx !== -1)
+      this._listeners.splice(idx, 1);
+    else
+      throw new Error(&quot;unsubscribe: listener is not registered&quot;);
+  }
+
+  /**
+   * Invoke each registered listener with `value`.
+   *
+   * **Note**: method returns immediately,
+   * but listeners will be called synchronously in subscription order
+
+   * @param {Any} value - argument will be passed to listeners
+   */
+  emit(value: T): void {
+    setTimeout(() =&gt; {
+
+      var len = this._listeners.length;
+      for (var i = 0; i &lt; len; i++) {
+        this._listeners[i](value)
+      }
+
+    })
+  }
+
+  /**
+   * @example
+   * let x = new Observable;
+   * x.map(v =&gt; v * 2).subscribe(v =&gt; console.log(&quot;Value:&quot;, v));
+   *
+   * x.emit(10);
+   * //&gt; Value: 20
+   *
+   * @param {function(value: Any): Any} mapper - how to transform the emitted value
+   * @returns {Observable}
+   */
+  map(mapper: (p: T) =&gt; T): Observable&lt;T&gt; {
+    let mapped: Observable&lt;T&gt; = new Observable;
+    this.subscribe(p =&gt; {
+      mapped.emit(mapper(p));
+    });
+    return mapped
+  }
+
+  /**
+   * @example
+   * let numbers = new Observable;
+   * let even = numbers.filter(v =&gt; v % 2 === 0);
+   *
+   * numbers.subscribe(v =&gt; console.log(&quot;Any:&quot;, v))
+   * even.subscribe(v =&gt; console.log(&quot;Even:&quot;, v));
+   *
+   * numbers.emit(1);
+   * //&gt; Any: 1
+
+   * numbers.emit(2);
+   * //&gt; Any: 2
+   * //&gt; Even: 2
+   *
+   * @param {function(value: Any): boolean} predicate
+   * @returns {Observable}
+   */
+  filter(predicate: (p: T) =&gt; boolean): Observable&lt;T&gt; {
+    let filtered: Observable&lt;T&gt; = new Observable;
+    this.subscribe(p =&gt; {
+      if (predicate(p)) filtered.emit(p)
+    });
+    return filtered
+  }
+
+  /**
+   * @example
+   * let emitter = new Observable;
+   * let sum = emitter.reduce(0, (a, v) =&gt; a + v);
+   *
+   * sum.subscribe(s =&gt; console.log(s));
+   *
+   * emitter.emit(10);
+   * //&gt; 10
+   * emitter.emit(15);
+   * //&gt; 25
+   *
+   * @param {Any} accumulator - initial state
+   * @param {function(accumulator: Any, value: Any): Any} reducer
+   * @returns {ObservableState}
+   */
+  reduce&lt;R&gt;(accumulator: R, reducer: (a: R, p: T) =&gt; R): ObservableState&lt;R&gt; {
+    let reduced: ObservableState&lt;R&gt; = new ObservableState(accumulator);
+    this.subscribe(p =&gt; {
+      reduced.getState(a =&gt; {
+        reduced.emit(reducer(a, p))
+      })
+    });
+    return reduced
+  }
+
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+<script data-ice="userScript" src="user/script/0-prism.js"></script></body>
+</html>

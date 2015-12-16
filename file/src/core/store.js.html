@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/core/store.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  
+  
+  
+  
+  <script src="script/manual.js"></script>
+
+<link data-ice="userStyle" rel="stylesheet" href="user/css/0-custom.css">
+<link data-ice="userStyle" rel="stylesheet" href="user/css/1-prism.css">
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header><a href="./index.html" class="branding">Fastflux</a>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <a data-ice="repoURL" href="https://github.com/rvikmanis/fastflux.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Message">Message</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://www.npmjs.com/package/react">React.Component</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">core</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/store.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createAction">createAction</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createStore">createStore</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createSubscriber">createSubscriber</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">core/observable</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/base.js~Observable.html">Observable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/subscription.js~Subscription.html">Subscription</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/core/store.js</h1>
+<pre class="line-numbers"><code class="language-js" data-ice="content">import ObservableState from &apos;./observable/state.js&apos;;
+
+
+/**
+ * Container for application state and logic.
+ *
+ * *This class is abstract and cannot be instantiated.*
+ *
+ * ## Implementing
+ * A store:
+ *  1. Must have instance method `getInitialState` with signature:
+ *
+ *         function(): Any&lt;S&gt;
+ *
+ *  2. Must have either one of:
+ *     * static method `reducer` with signature:
+ *
+ *           function(state: Any&lt;S&gt;, message: Message): Any&lt;S&gt;
+ *
+ *     * static property `reducers` with signature:
+ *
+ *           {[string]: function(state: Any&lt;S&gt;, message: Message): Any&lt;S&gt;}
+ *
+ *
+ * #### Single reducer variant:
+ *
+ *     let logger = new class extends Store {
+ *       getInitialState() { return [] }
+ *       static reducer(state, {type, value}) {
+ *
+ *         if (type === &quot;add&quot;) {}
+ *           return state.concat([value]);
+ *         }
+ *
+ *       }
+ *     }
+ *
+ *
+ * #### Object mapping {@link Message}#type to reducers:
+ *
+ *     let logger = new class extends Store {
+ *       getInitialState() { return [] }
+ *       static reducers = {
+ *
+ *          add(state, {value}) {
+ *            return state.concat([value])
+ *          }
+ *
+ *       }
+ *     }
+ *
+ * &gt; **Note:** you can also create a store  with {@link createStore}.
+ *
+ * -----------
+ * @example
+ * let counter = new class extends Store {
+ *   getInitialState() { return 0 }
+ *   static reducers = {
+ *     inc(state, {amount}) { return state + amount; },
+ *     dec(state, {amount}) { return state - amount; }
+ *   }
+ * }
+ *
+ * function increment(amount=1) {
+ *   counter.send({type: &quot;inc&quot;, amount})
+ * }
+ *
+ * function decrement(amount=1) {
+ *   counter.send({type: &quot;dec&quot;, amount})
+ * }
+ *
+ * counter.subscribe(n =&gt; console.log(&quot;Counter value:&quot;, n));
+ *
+ * increment(); //&gt; Counter value: 1
+ * increment(); //&gt; Counter value: 2
+ * increment(2); //&gt; Counter value: 4
+ *
+ * decrement(12); //&gt; Counter value: -8
+ */
+export class Store extends ObservableState {
+
+
+  /**
+   * @throws {Error} when trying to instantiate the abstract {@link Store} directly
+   * @throws {Error} when no reducers are defined
+   * @throws {Error} when `getInitialState` is not implemented
+   */
+  constructor() {
+    super();
+
+    if (this.constructor === Store)
+      throw new Error(&quot;Store is abstract: extend or call createStore&quot;);
+
+    let reducers = this.constructor.reducers || this.constructor.reducer;
+    let initialState = this.getInitialState();
+
+    if (typeof reducers !== &quot;object&quot; &amp;&amp; typeof reducers !== &quot;function&quot;)
+      throw new Error(&quot;Expecting &quot; +
+          &quot;reducer function or object mapping message types -&gt; reducer functions &quot; +
+          &quot;in static property reducers&quot;);
+
+    this._reducers = reducers;
+    this._state = initialState;
+
+    this._isProcessing = false;
+
+    const send = this.send;
+    this.send = (message, context) =&gt; send.call(this, message, context)
+  }
+
+
+  /**
+   * @abstract
+   * @returns {Any}
+   */
+  getInitialState() {
+    throw new Error(&quot;Not implemented&quot;);
+  }
+
+
+  /**
+   * Send a message. Bound method
+   * @method
+   * @param {Message} message
+   * @param {Any} [context]
+   */
+  send(message, context) {
+    while (true) {
+      if (!this._isProcessing) break
+    }
+    this._process(message, context)
+  }
+
+  _process(message, context) {
+    this._isProcessing = true;
+
+    let reducer;
+    if (typeof this._reducers === &quot;object&quot;) {
+      if (!this._reducers.hasOwnProperty(message.type)) {
+        this._isProcessing = false;
+        return
+      }
+      reducer = this._reducers[message.type];
+    }
+    else reducer = this._reducers;
+
+    let oldState = this.getState();
+    let newState = reducer(
+      oldState,
+      message,
+      context != null ? context : null
+    );
+
+    if (newState != null &amp;&amp;
+        typeof newState.equals === &quot;function&quot; &amp;&amp;
+        newState.equals(oldState)
+    ) {
+      this._isProcessing = false;
+      return
+    }
+
+
+    if (newState !== void 0) {
+      super.emit(newState);
+    }
+
+    this._isProcessing = false
+  }
+
+  /**
+   * @ignore
+   */
+  emit() {
+    throw new Error(&quot;Disabled&quot;);
+  }
+
+
+}
+
+
+/**
+ * Dynamically extends {@link Store} and instantiates the new class.
+ *
+ * `options.getInitialState` and either `options.reducer` or `options.reducers` are required.&lt;br /&gt;
+ * When both are defined, `options.reducers` takes precedence.&lt;br /&gt;
+ * Type requirements are interchangable, meaning either can
+ * take {@link Object} or {@link function}.
+ * @example
+ * let counter = createStore({
+ *   getInitialState() { return 0 },
+ *   reducers: {
+ *     inc(state) { return ++state },
+ *     dec(state) { return --state }
+ *   }
+ * })
+ * @param {Object} options
+ * @param {function(): Any&lt;S&gt;} options.getInitialState
+ * @param {function(state: Any&lt;S&gt;, message: Message): Any&lt;S&gt;} options.reducer
+ * @param {Object} options.reducers - maps {@link Message}#type to reducers
+ * @returns {Store}
+ */
+export function createStore({getInitialState, reducer, reducers} = {}) {
+
+  if (reducers == null) {
+    reducers = reducer
+  }
+
+  let _s = class extends Store {}
+
+  if (getInitialState != null)
+    _s.prototype.getInitialState = getInitialState;
+
+  if (reducers != null)
+    _s.reducers = reducers;
+
+  return new _s;
+
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+<script data-ice="userScript" src="user/script/0-prism.js"></script></body>
+</html>

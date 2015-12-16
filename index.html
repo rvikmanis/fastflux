@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl">
+  <title data-ice="title">API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  
+  
+  
+  
+  <script src="script/manual.js"></script>
+
+<link data-ice="userStyle" rel="stylesheet" href="user/css/0-custom.css">
+<link data-ice="userStyle" rel="stylesheet" href="user/css/1-prism.css">
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header><a href="./index.html" class="branding">Fastflux</a>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <a data-ice="repoURL" href="https://github.com/rvikmanis/fastflux.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Message">Message</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-external">E</span><span data-ice="name"><span><a href="https://www.npmjs.com/package/react">React.Component</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">core</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/store.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createAction">createAction</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createStore">createStore</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createSubscriber">createSubscriber</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">core/observable</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/base.js~Observable.html">Observable</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/core/observable/subscription.js~Subscription.html">Subscription</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="fastflux">Fastflux</h1>
+<p>A lightweight message driven flux implementation written in ES6,
+inspired by <a href="https://en.wikipedia.org/wiki/Functional_reactive_programming">FRP</a>,
+the <a href="https://facebook.github.io/flux/docs/overview.html">original Flux</a>
+and <a href="https://github.com/rackt/redux">Redux</a>.</p>
+<h2 id="installation">Installation</h2>
+<p>Install from npm:</p>
+<pre><code class="lang-plain language-js">npm install fastflux</code></pre>
+<h2 id="getting-started">Getting started</h2>
+<p>This introduction assumes familiarity with ES6 and React.</p>
+<h3 id="create-your-first-store-and-action">Create your first store and action</h3>
+<pre><code class="lang-js language-js">import {createStore, createAction} from &apos;fastflux&apos;;
+
+// Define store
+let items = createStore({
+  getInitialState() {return []},
+
+  reducers: {
+
+    add(state, {text}) {
+      return state.concat([text])
+    }
+
+  }
+});
+
+// Define action
+let addItem = createAction(emit =&gt; text =&gt; {
+  emit({type: &quot;add&quot;, text})
+});
+
+// Link action to store
+addItem.subscribe(items.send);</code></pre>
+<h5 id="setup-logging">Setup logging</h5>
+<pre><code class="lang-js language-js">// Log state over time
+items.subscribe(s =&gt; console.log(&quot;State of `items`:&quot;, s))
+
+// While we&apos;re at it, let&apos;s create some items
+[&quot;bar&quot;, &quot;foobar&quot;, &quot;baz&quot;].forEach(addItem);</code></pre>
+<p>Open the console, you will see something like this:</p>
+<pre><code class="lang-plain language-js">State of `items`: [&quot;bar&quot;]
+State of `items`: [&quot;bar&quot;, &quot;foobar&quot;]
+State of `items`: [&quot;bar&quot;, &quot;foobar&quot;, &quot;baz&quot;]</code></pre>
+<h3 id="create-components">Create components</h3>
+<pre><code class="lang-js language-js">import {createSubscriber} from &apos;fastflux&apos;;
+import {Component} from &apos;react&apos;;
+
+// Define input
+class ItemInput extends Component {
+
+  state = {value: &quot;&quot;};
+
+  onKeyDown = (e) =&gt; {
+    if (e.key === &quot;Enter&quot;) {
+      // Invoke action
+      addItem(e.target.value);
+      this.clearValue();
+    }
+  };
+
+  onChange = (e) =&gt; {
+    this.setValue(e.target.value)
+  };
+
+  setValue = (value) =&gt; this.setState({value});
+  clearValue = () =&gt; this.setValue(&quot;&quot;);
+
+  render() {
+    return &lt;input
+      type=&quot;text&quot;
+      onKeyDown={this.onKeyDown}
+      onChange={this.onChange}
+      value={this.state.value}
+    /&gt;
+  }
+
+}
+
+// Define root component
+function ControllerView(props) {
+  // `props.items` contains current state of the `items` store
+  let items = props.items.map(item =&gt; &lt;li&gt;{item}&lt;/li&gt;);
+  return &lt;div&gt;
+    &lt;ul&gt;{items}&lt;/ul&gt;
+    &lt;ItemInput /&gt;
+  &lt;/div&gt;;
+}
+
+// Subscriber observes stores passed in props:
+// When a store emits new state, subscriber updates wrapped component&apos;s prop.
+ControllerView = createSubscriber(ControllerView);
+let rootComponent = &lt;ControllerView items={items}&gt;;</code></pre>
+<h5 id="render">Render</h5>
+<p>Assuming you have <code>&lt;div id=&quot;mount&quot;&gt;&lt;/div&gt;</code> in your document body:</p>
+<pre><code class="lang-js language-js">import {render} from &apos;react-dom&apos;;
+render(rootComponent, document.querySelector(&quot;#mount&quot;))</code></pre>
+</div>
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.3)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+<script data-ice="userScript" src="user/script/0-prism.js"></script></body>
+</html>

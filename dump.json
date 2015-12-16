@@ -1,0 +1,2123 @@
+[
+  {
+    "__docId__": 0,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/browser/fastflux.js",
+    "memberof": null,
+    "longname": "src/browser/fastflux.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "(function(window) {\n\n  window.Fastflux = window.Fastflux || require(\"../index\");\n\n})(window);\n"
+  },
+  {
+    "__docId__": 1,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/core/action.js",
+    "memberof": null,
+    "longname": "src/core/action.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import Observable from './observable/base.js';\n\n\n/**\n * Creates an observable function that\n * asynchronously invokes the nested inner function.\n *\n * The inner function may call `emit`.\n *\n * @example\n * let mul = createAction(emit => function (x, y) {\n *   emit(x * y)\n * });\n * mul.subscribe(result => console.log(\"Result:\", result));\n *\n * //> Result: 25\n * mul(5, 5);\n * @param {function(emit: function): function} getRunner\n * @returns {function}\n */\nexport function createAction(getRunner) {\n  let observable = new Observable;\n\n  let runner = getRunner(payload => observable.emit(payload));\n  let action = (...args) => {\n    setTimeout(() => runner(...args))\n  };\n\n  Object.defineProperties(action, {\n    subscribe: {value: callback => observable.subscribe(callback)},\n    unsubscribe: {value: callback => observable.unsubscribe(callback)},\n    map: {value: mapper => observable.map(mapper)},\n    filter: {value: predicate => observable.filter(predicate)},\n    reduce: {value: (accumulator, reducer) => observable.reduce(accumulator, reducer)}\n  });\n\n  return action\n}\n"
+  },
+  {
+    "__docId__": 2,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "createAction",
+    "memberof": "src/core/action.js",
+    "longname": "src/core/action.js~createAction",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/core/action",
+    "importStyle": "{createAction}",
+    "description": "Creates an observable function that\nasynchronously invokes the nested inner function.\n\nThe inner function may call `emit`.",
+    "examples": [
+      "let mul = createAction(emit => function (x, y) {\n  emit(x * y)\n});\nmul.subscribe(result => console.log(\"Result:\", result));\n\n//> Result: 25\nmul(5, 5);"
+    ],
+    "lineNumber": 21,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{function}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function(emit: function): function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "getRunner",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "function"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 3,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/core/observable/base.js",
+    "memberof": null,
+    "longname": "src/core/observable/base.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import ObservableState from './state';\nimport Subscription from './subscription';\n\n/**\n * @example\n * let ready = new Observable;\n * ready.subscribe(data => console.log(\"Received:\", data));\n *\n * ready.emit(\"Foo\");\n * //> Received: Foo\n */\nexport default class Observable<T> {\n\n  _listeners = [];\n\n  /**\n   * Register listener\n   * @param {function} listener\n   * @throws {Error} if `listener` is already subscribed to this observable\n   * @returns {Subscription}\n   */\n  subscribe(listener: (v: T) => void): void {\n    if (this._listeners.indexOf(listener) === -1) {\n      this._listeners.push(listener);\n      return new Subscription(this, listener);\n    }\n    else throw new Error(\"subscribe: cannot register twice\");\n  }\n\n  /**\n   * True if `listener` has subscribed to `this` observable\n   * @param {function} listener\n   * @returns {boolean}\n   */\n  hasSubscribed(listener: (v: T) => void): boolean {\n    return this._listeners.indexOf(listener) !== -1\n  }\n\n  /**\n   * Unregister listener\n   * @param {function} listener\n   * @throws {Error} if `listener` is not registered\n   */\n  unsubscribe(listener: (v: T) => void): void {\n    var idx = this._listeners.indexOf(listener);\n    if (idx !== -1)\n      this._listeners.splice(idx, 1);\n    else\n      throw new Error(\"unsubscribe: listener is not registered\");\n  }\n\n  /**\n   * Invoke each registered listener with `value`.\n   *\n   * **Note**: method returns immediately,\n   * but listeners will be called synchronously in subscription order\n\n   * @param {Any} value - argument will be passed to listeners\n   */\n  emit(value: T): void {\n    setTimeout(() => {\n\n      var len = this._listeners.length;\n      for (var i = 0; i < len; i++) {\n        this._listeners[i](value)\n      }\n\n    })\n  }\n\n  /**\n   * @example\n   * let x = new Observable;\n   * x.map(v => v * 2).subscribe(v => console.log(\"Value:\", v));\n   *\n   * x.emit(10);\n   * //> Value: 20\n   *\n   * @param {function(value: Any): Any} mapper - how to transform the emitted value\n   * @returns {Observable}\n   */\n  map(mapper: (p: T) => T): Observable<T> {\n    let mapped: Observable<T> = new Observable;\n    this.subscribe(p => {\n      mapped.emit(mapper(p));\n    });\n    return mapped\n  }\n\n  /**\n   * @example\n   * let numbers = new Observable;\n   * let even = numbers.filter(v => v % 2 === 0);\n   *\n   * numbers.subscribe(v => console.log(\"Any:\", v))\n   * even.subscribe(v => console.log(\"Even:\", v));\n   *\n   * numbers.emit(1);\n   * //> Any: 1\n\n   * numbers.emit(2);\n   * //> Any: 2\n   * //> Even: 2\n   *\n   * @param {function(value: Any): boolean} predicate\n   * @returns {Observable}\n   */\n  filter(predicate: (p: T) => boolean): Observable<T> {\n    let filtered: Observable<T> = new Observable;\n    this.subscribe(p => {\n      if (predicate(p)) filtered.emit(p)\n    });\n    return filtered\n  }\n\n  /**\n   * @example\n   * let emitter = new Observable;\n   * let sum = emitter.reduce(0, (a, v) => a + v);\n   *\n   * sum.subscribe(s => console.log(s));\n   *\n   * emitter.emit(10);\n   * //> 10\n   * emitter.emit(15);\n   * //> 25\n   *\n   * @param {Any} accumulator - initial state\n   * @param {function(accumulator: Any, value: Any): Any} reducer\n   * @returns {ObservableState}\n   */\n  reduce<R>(accumulator: R, reducer: (a: R, p: T) => R): ObservableState<R> {\n    let reduced: ObservableState<R> = new ObservableState(accumulator);\n    this.subscribe(p => {\n      reduced.getState(a => {\n        reduced.emit(reducer(a, p))\n      })\n    });\n    return reduced\n  }\n\n}\n"
+  },
+  {
+    "__docId__": 4,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Observable",
+    "memberof": "src/core/observable/base.js",
+    "longname": "src/core/observable/base.js~Observable",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/core/observable/base",
+    "importStyle": "Observable",
+    "description": null,
+    "examples": [
+      "let ready = new Observable;\nready.subscribe(data => console.log(\"Received:\", data));\n\nready.emit(\"Foo\");\n//> Received: Foo"
+    ],
+    "lineNumber": 12,
+    "interface": false
+  },
+  {
+    "__docId__": 5,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "subscribe",
+    "memberof": "src/core/observable/base.js~Observable",
+    "longname": "src/core/observable/base.js~Observable#subscribe",
+    "access": null,
+    "description": "Register listener",
+    "lineNumber": 22,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Subscription}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "listener",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Subscription"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "throws": [
+      {
+        "types": [
+          "Error"
+        ],
+        "description": "if `listener` is already subscribed to this observable"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 6,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "hasSubscribed",
+    "memberof": "src/core/observable/base.js~Observable",
+    "longname": "src/core/observable/base.js~Observable#hasSubscribed",
+    "access": null,
+    "description": "True if `listener` has subscribed to `this` observable",
+    "lineNumber": 35,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{boolean}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "listener",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "boolean"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 7,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "unsubscribe",
+    "memberof": "src/core/observable/base.js~Observable",
+    "longname": "src/core/observable/base.js~Observable#unsubscribe",
+    "access": null,
+    "description": "Unregister listener",
+    "lineNumber": 44,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "listener",
+        "description": ""
+      }
+    ],
+    "throws": [
+      {
+        "types": [
+          "Error"
+        ],
+        "description": "if `listener` is not registered"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 8,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "emit",
+    "memberof": "src/core/observable/base.js~Observable",
+    "longname": "src/core/observable/base.js~Observable#emit",
+    "access": null,
+    "description": "Invoke each registered listener with `value`.\n\n**Note**: method returns immediately,\nbut listeners will be called synchronously in subscription order",
+    "lineNumber": 60,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "value",
+        "description": "argument will be passed to listeners"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 9,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "map",
+    "memberof": "src/core/observable/base.js~Observable",
+    "longname": "src/core/observable/base.js~Observable#map",
+    "access": null,
+    "description": null,
+    "examples": [
+      "let x = new Observable;\nx.map(v => v * 2).subscribe(v => console.log(\"Value:\", v));\n\nx.emit(10);\n//> Value: 20"
+    ],
+    "lineNumber": 82,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Observable}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function(value: Any): Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "mapper",
+        "description": "how to transform the emitted value"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Observable"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 10,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "filter",
+    "memberof": "src/core/observable/base.js~Observable",
+    "longname": "src/core/observable/base.js~Observable#filter",
+    "access": null,
+    "description": null,
+    "examples": [
+      "let numbers = new Observable;\nlet even = numbers.filter(v => v % 2 === 0);\n\nnumbers.subscribe(v => console.log(\"Any:\", v))\neven.subscribe(v => console.log(\"Even:\", v));\n\nnumbers.emit(1);\n//> Any: 1\nnumbers.emit(2);\n//> Any: 2\n//> Even: 2"
+    ],
+    "lineNumber": 108,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Observable}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function(value: Any): boolean"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "predicate",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Observable"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 11,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "reduce",
+    "memberof": "src/core/observable/base.js~Observable",
+    "longname": "src/core/observable/base.js~Observable#reduce",
+    "access": null,
+    "description": null,
+    "examples": [
+      "let emitter = new Observable;\nlet sum = emitter.reduce(0, (a, v) => a + v);\n\nsum.subscribe(s => console.log(s));\n\nemitter.emit(10);\n//> 10\nemitter.emit(15);\n//> 25"
+    ],
+    "lineNumber": 132,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{ObservableState}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "accumulator",
+        "description": "initial state"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "function(accumulator: Any, value: Any): Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "reducer",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ObservableState"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 12,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/core/observable/index.js",
+    "memberof": null,
+    "longname": "src/core/observable/index.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import Observable from './base';\nimport ObservableState from './state';\nimport Subscription from './subscription';\n\nexport {Observable, ObservableState, Subscription};\n"
+  },
+  {
+    "__docId__": 13,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/core/observable/state.js",
+    "memberof": null,
+    "longname": "src/core/observable/state.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import Observable from './base.js';\n\n\n/**\n * @example\n * let name = new ObservableState(\"Foo\");\n *\n * name.getData(initial => console.log(\"Initial:\", initial));\n * //> Initial: Foo\n *\n * name.subscribe(data => {\n *   console.log(\"Received:\", data);\n *   name.getState(currentState => assert(data === currentState))\n * });\n *\n * name.emit(\"Foobar\");\n * //> Received: Foobar\n *\n */\nexport default class ObservableState extends Observable {\n\n\n  /**\n   * @param {Any} initialState\n   */\n  constructor(initialState) {\n    super();\n    this._state = (initialState != null ? initialState : null)\n  }\n\n\n  /**\n   * Return current state or asynchronously invoke callback\n   *\n   * @example <caption>Without arguments - synchronous</caption>\n   * let name = new ObservableState(\"Guest\");\n   * let val = name.getState();\n   * assert(val === \"Guest\");\n   *\n   * @example <caption>With callback - asynchronous</caption>\n   * let name = new ObservableState(\"Guest\");\n   * let returnVal = name.getState(val => {\n   *   assert(val === \"Guest\")\n   * });\n   * assert(returnVal === undefined);\n   *\n   * @param {function} [callback]\n   * @returns {Any|undefined}\n   */\n  getState(callback) {\n    if (typeof callback === \"function\") {\n      setTimeout(() => callback(this._state));\n      return\n    }\n    return this._state\n  }\n\n\n  /**\n   * Same as {@link Observable#emit}, but sets\n   * current state to `value`\n   *\n   * @param {Any} value - new state\n   */\n  emit(value) {\n    this._state = value != null ? value : null;\n    super.emit(this._state);\n  }\n\n\n}\n"
+  },
+  {
+    "__docId__": 14,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "ObservableState",
+    "memberof": "src/core/observable/state.js",
+    "longname": "src/core/observable/state.js~ObservableState",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/core/observable/state",
+    "importStyle": "ObservableState",
+    "description": null,
+    "examples": [
+      "let name = new ObservableState(\"Foo\");\n\nname.getData(initial => console.log(\"Initial:\", initial));\n//> Initial: Foo\n\nname.subscribe(data => {\n  console.log(\"Received:\", data);\n  name.getState(currentState => assert(data === currentState))\n});\n\nname.emit(\"Foobar\");\n//> Received: Foobar"
+    ],
+    "lineNumber": 20,
+    "interface": false,
+    "extends": [
+      "src/core/observable/base.js~Observable"
+    ]
+  },
+  {
+    "__docId__": 15,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/core/observable/state.js~ObservableState",
+    "longname": "src/core/observable/state.js~ObservableState#constructor",
+    "access": null,
+    "description": null,
+    "lineNumber": 26,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "initialState",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 16,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_state",
+    "memberof": "src/core/observable/state.js~ObservableState",
+    "longname": "src/core/observable/state.js~ObservableState#_state",
+    "access": null,
+    "description": null,
+    "lineNumber": 28,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 17,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "getState",
+    "memberof": "src/core/observable/state.js~ObservableState",
+    "longname": "src/core/observable/state.js~ObservableState#getState",
+    "access": null,
+    "description": "Return current state or asynchronously invoke callback",
+    "examples": [
+      "<caption>Without arguments - synchronous</caption>\nlet name = new ObservableState(\"Guest\");\nlet val = name.getState();\nassert(val === \"Guest\");",
+      "<caption>With callback - asynchronous</caption>\nlet name = new ObservableState(\"Guest\");\nlet returnVal = name.getState(val => {\n  assert(val === \"Guest\")\n});\nassert(returnVal === undefined);"
+    ],
+    "lineNumber": 50,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Any|undefined}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "callback",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Any",
+        "undefined"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 18,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "emit",
+    "memberof": "src/core/observable/state.js~ObservableState",
+    "longname": "src/core/observable/state.js~ObservableState#emit",
+    "access": null,
+    "description": "Same as {@link Observable#emit}, but sets\ncurrent state to `value`",
+    "lineNumber": 65,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "value",
+        "description": "new state"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 19,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_state",
+    "memberof": "src/core/observable/state.js~ObservableState",
+    "longname": "src/core/observable/state.js~ObservableState#_state",
+    "access": null,
+    "description": null,
+    "lineNumber": 66,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 20,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/core/observable/subscription.js",
+    "memberof": null,
+    "longname": "src/core/observable/subscription.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import Observable from './base.js';\n\n/**\n * @example\n * let emitter = new Observable;\n * let log = (v) => console.log(\"Received:\", v);\n *\n * let subscription = new Subscription(emitter, log);\n * assert(!subscription.isActive());\n *\n * subscription.activate();\n * assert(subscription.isActive());\n *\n * subscription.terminate();\n * assert(!subscription.isActive());\n */\nexport default class Subscription {\n\n  /**\n   * @param {Observable} source\n   * @param {function} subscriber\n   */\n  constructor(source, subscriber) {\n    this._source = source;\n    this._subscriber = subscriber;\n  }\n\n  /**\n   * Equivalent to `source.hasSubscribed(subscriber)`\n   *\n   * See {@link Observable#hasSubscribed}\n   * @returns {boolean}\n   */\n  isActive() {\n    return this._source.hasSubscribed(this._subscriber);\n  }\n\n  /**\n   * Equivalent to `source.subscribe(subscriber)`\n   *\n   * See {@link Observable#subscribe}\n   */\n  activate() {\n    this._source.subscribe(this._subscriber);\n  }\n\n  /**\n   * Equivalent to `source.unsubscribe(subscriber)`\n   *\n   * See {@link Observable#unsubscribe}\n   */\n  terminate() {\n    this.source.unsubscribe(this._subscriber);\n  }\n}\n"
+  },
+  {
+    "__docId__": 21,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Subscription",
+    "memberof": "src/core/observable/subscription.js",
+    "longname": "src/core/observable/subscription.js~Subscription",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/core/observable/subscription",
+    "importStyle": "Subscription",
+    "description": null,
+    "examples": [
+      "let emitter = new Observable;\nlet log = (v) => console.log(\"Received:\", v);\n\nlet subscription = new Subscription(emitter, log);\nassert(!subscription.isActive());\n\nsubscription.activate();\nassert(subscription.isActive());\n\nsubscription.terminate();\nassert(!subscription.isActive());"
+    ],
+    "lineNumber": 17,
+    "interface": false
+  },
+  {
+    "__docId__": 22,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/core/observable/subscription.js~Subscription",
+    "longname": "src/core/observable/subscription.js~Subscription#constructor",
+    "access": null,
+    "description": null,
+    "lineNumber": 23,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Observable"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "source",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "subscriber",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 23,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_source",
+    "memberof": "src/core/observable/subscription.js~Subscription",
+    "longname": "src/core/observable/subscription.js~Subscription#_source",
+    "access": null,
+    "description": null,
+    "lineNumber": 24,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 24,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_subscriber",
+    "memberof": "src/core/observable/subscription.js~Subscription",
+    "longname": "src/core/observable/subscription.js~Subscription#_subscriber",
+    "access": null,
+    "description": null,
+    "lineNumber": 25,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 25,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "isActive",
+    "memberof": "src/core/observable/subscription.js~Subscription",
+    "longname": "src/core/observable/subscription.js~Subscription#isActive",
+    "access": null,
+    "description": "Equivalent to `source.hasSubscribed(subscriber)`\n\nSee {@link Observable#hasSubscribed}",
+    "lineNumber": 34,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{boolean}"
+      }
+    ],
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "boolean"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 26,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "activate",
+    "memberof": "src/core/observable/subscription.js~Subscription",
+    "longname": "src/core/observable/subscription.js~Subscription#activate",
+    "access": null,
+    "description": "Equivalent to `source.subscribe(subscriber)`\n\nSee {@link Observable#subscribe}",
+    "lineNumber": 43,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 27,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "terminate",
+    "memberof": "src/core/observable/subscription.js~Subscription",
+    "longname": "src/core/observable/subscription.js~Subscription#terminate",
+    "access": null,
+    "description": "Equivalent to `source.unsubscribe(subscriber)`\n\nSee {@link Observable#unsubscribe}",
+    "lineNumber": 52,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 28,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/core/store.js",
+    "memberof": null,
+    "longname": "src/core/store.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import ObservableState from './observable/state.js';\n\n\n/**\n * Container for application state and logic.\n *\n * *This class is abstract and cannot be instantiated.*\n *\n * ## Implementing\n * A store:\n *  1. Must have instance method `getInitialState` with signature:\n *\n *         function(): Any<S>\n *\n *  2. Must have either one of:\n *     * static method `reducer` with signature:\n *\n *           function(state: Any<S>, message: Message): Any<S>\n *\n *     * static property `reducers` with signature:\n *\n *           {[string]: function(state: Any<S>, message: Message): Any<S>}\n *\n *\n * #### Single reducer variant:\n *\n *     let logger = new class extends Store {\n *       getInitialState() { return [] }\n *       static reducer(state, {type, value}) {\n *\n *         if (type === \"add\") {}\n *           return state.concat([value]);\n *         }\n *\n *       }\n *     }\n *\n *\n * #### Object mapping {@link Message}#type to reducers:\n *\n *     let logger = new class extends Store {\n *       getInitialState() { return [] }\n *       static reducers = {\n *\n *          add(state, {value}) {\n *            return state.concat([value])\n *          }\n *\n *       }\n *     }\n *\n * > **Note:** you can also create a store  with {@link createStore}.\n *\n * -----------\n * @example\n * let counter = new class extends Store {\n *   getInitialState() { return 0 }\n *   static reducers = {\n *     inc(state, {amount}) { return state + amount; },\n *     dec(state, {amount}) { return state - amount; }\n *   }\n * }\n *\n * function increment(amount=1) {\n *   counter.send({type: \"inc\", amount})\n * }\n *\n * function decrement(amount=1) {\n *   counter.send({type: \"dec\", amount})\n * }\n *\n * counter.subscribe(n => console.log(\"Counter value:\", n));\n *\n * increment(); //> Counter value: 1\n * increment(); //> Counter value: 2\n * increment(2); //> Counter value: 4\n *\n * decrement(12); //> Counter value: -8\n */\nexport class Store extends ObservableState {\n\n\n  /**\n   * @throws {Error} when trying to instantiate the abstract {@link Store} directly\n   * @throws {Error} when no reducers are defined\n   * @throws {Error} when `getInitialState` is not implemented\n   */\n  constructor() {\n    super();\n\n    if (this.constructor === Store)\n      throw new Error(\"Store is abstract: extend or call createStore\");\n\n    let reducers = this.constructor.reducers || this.constructor.reducer;\n    let initialState = this.getInitialState();\n\n    if (typeof reducers !== \"object\" && typeof reducers !== \"function\")\n      throw new Error(\"Expecting \" +\n          \"reducer function or object mapping message types -> reducer functions \" +\n          \"in static property reducers\");\n\n    this._reducers = reducers;\n    this._state = initialState;\n\n    this._isProcessing = false;\n\n    const send = this.send;\n    this.send = (message, context) => send.call(this, message, context)\n  }\n\n\n  /**\n   * @abstract\n   * @returns {Any}\n   */\n  getInitialState() {\n    throw new Error(\"Not implemented\");\n  }\n\n\n  /**\n   * Send a message. Bound method\n   * @method\n   * @param {Message} message\n   * @param {Any} [context]\n   */\n  send(message, context) {\n    while (true) {\n      if (!this._isProcessing) break\n    }\n    this._process(message, context)\n  }\n\n  _process(message, context) {\n    this._isProcessing = true;\n\n    let reducer;\n    if (typeof this._reducers === \"object\") {\n      if (!this._reducers.hasOwnProperty(message.type)) {\n        this._isProcessing = false;\n        return\n      }\n      reducer = this._reducers[message.type];\n    }\n    else reducer = this._reducers;\n\n    let oldState = this.getState();\n    let newState = reducer(\n      oldState,\n      message,\n      context != null ? context : null\n    );\n\n    if (newState != null &&\n        typeof newState.equals === \"function\" &&\n        newState.equals(oldState)\n    ) {\n      this._isProcessing = false;\n      return\n    }\n\n\n    if (newState !== void 0) {\n      super.emit(newState);\n    }\n\n    this._isProcessing = false\n  }\n\n  /**\n   * @ignore\n   */\n  emit() {\n    throw new Error(\"Disabled\");\n  }\n\n\n}\n\n\n/**\n * Dynamically extends {@link Store} and instantiates the new class.\n *\n * `options.getInitialState` and either `options.reducer` or `options.reducers` are required.<br />\n * When both are defined, `options.reducers` takes precedence.<br />\n * Type requirements are interchangable, meaning either can\n * take {@link Object} or {@link function}.\n * @example\n * let counter = createStore({\n *   getInitialState() { return 0 },\n *   reducers: {\n *     inc(state) { return ++state },\n *     dec(state) { return --state }\n *   }\n * })\n * @param {Object} options\n * @param {function(): Any<S>} options.getInitialState\n * @param {function(state: Any<S>, message: Message): Any<S>} options.reducer\n * @param {Object} options.reducers - maps {@link Message}#type to reducers\n * @returns {Store}\n */\nexport function createStore({getInitialState, reducer, reducers} = {}) {\n\n  if (reducers == null) {\n    reducers = reducer\n  }\n\n  let _s = class extends Store {}\n\n  if (getInitialState != null)\n    _s.prototype.getInitialState = getInitialState;\n\n  if (reducers != null)\n    _s.reducers = reducers;\n\n  return new _s;\n\n}\n"
+  },
+  {
+    "__docId__": 29,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "Store",
+    "memberof": "src/core/store.js",
+    "longname": "src/core/store.js~Store",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/core/store",
+    "importStyle": "{Store}",
+    "description": "Container for application state and logic.\n\n*This class is abstract and cannot be instantiated.*\n\n## Implementing\nA store:\n 1. Must have instance method `getInitialState` with signature:\n\n        function(): Any<S>\n\n 2. Must have either one of:\n    * static method `reducer` with signature:\n\n          function(state: Any<S>, message: Message): Any<S>\n\n    * static property `reducers` with signature:\n\n          {[string]: function(state: Any<S>, message: Message): Any<S>}\n\n\n#### Single reducer variant:\n\n    let logger = new class extends Store {\n      getInitialState() { return [] }\n      static reducer(state, {type, value}) {\n\n        if (type === \"add\") {}\n          return state.concat([value]);\n        }\n\n      }\n    }\n\n\n#### Object mapping {@link Message}#type to reducers:\n\n    let logger = new class extends Store {\n      getInitialState() { return [] }\n      static reducers = {\n\n         add(state, {value}) {\n           return state.concat([value])\n         }\n\n      }\n    }\n\n> **Note:** you can also create a store  with {@link createStore}.\n\n-----------",
+    "examples": [
+      "let counter = new class extends Store {\n  getInitialState() { return 0 }\n  static reducers = {\n    inc(state, {amount}) { return state + amount; },\n    dec(state, {amount}) { return state - amount; }\n  }\n}\n\nfunction increment(amount=1) {\n  counter.send({type: \"inc\", amount})\n}\n\nfunction decrement(amount=1) {\n  counter.send({type: \"dec\", amount})\n}\n\ncounter.subscribe(n => console.log(\"Counter value:\", n));\n\nincrement(); //> Counter value: 1\nincrement(); //> Counter value: 2\nincrement(2); //> Counter value: 4\n\ndecrement(12); //> Counter value: -8"
+    ],
+    "lineNumber": 80,
+    "interface": false,
+    "extends": [
+      "src/core/observable/state.js~ObservableState"
+    ]
+  },
+  {
+    "__docId__": 30,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#constructor",
+    "access": null,
+    "description": null,
+    "lineNumber": 88,
+    "params": [],
+    "throws": [
+      {
+        "types": [
+          "Error"
+        ],
+        "description": "when trying to instantiate the abstract {@link Store} directly"
+      },
+      {
+        "types": [
+          "Error"
+        ],
+        "description": "when no reducers are defined"
+      },
+      {
+        "types": [
+          "Error"
+        ],
+        "description": "when `getInitialState` is not implemented"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 31,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_reducers",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#_reducers",
+    "access": null,
+    "description": null,
+    "lineNumber": 102,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 32,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_state",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#_state",
+    "access": null,
+    "description": null,
+    "lineNumber": 103,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 33,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_isProcessing",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#_isProcessing",
+    "access": null,
+    "description": null,
+    "lineNumber": 105,
+    "undocument": true,
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 34,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "send",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#send",
+    "access": null,
+    "description": null,
+    "lineNumber": 108,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 35,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "getInitialState",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#getInitialState",
+    "access": null,
+    "description": null,
+    "lineNumber": 116,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Any}"
+      }
+    ],
+    "params": [],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Any"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "abstract": true,
+    "generator": false
+  },
+  {
+    "__docId__": 36,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "send",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#send",
+    "access": null,
+    "description": "Send a message. Bound method",
+    "lineNumber": 127,
+    "unknown": [
+      {
+        "tagName": "@method",
+        "tagValue": ""
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Message"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "message",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Any"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "context",
+        "description": ""
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 37,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "_process",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#_process",
+    "access": null,
+    "description": null,
+    "lineNumber": 134,
+    "undocument": true,
+    "params": [
+      {
+        "name": "message",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "context",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 38,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_isProcessing",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#_isProcessing",
+    "access": null,
+    "description": null,
+    "lineNumber": 135,
+    "undocument": true,
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 39,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_isProcessing",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#_isProcessing",
+    "access": null,
+    "description": null,
+    "lineNumber": 140,
+    "undocument": true,
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 40,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_isProcessing",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#_isProcessing",
+    "access": null,
+    "description": null,
+    "lineNumber": 158,
+    "undocument": true,
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 41,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "_isProcessing",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#_isProcessing",
+    "access": null,
+    "description": null,
+    "lineNumber": 167,
+    "undocument": true,
+    "type": {
+      "types": [
+        "boolean"
+      ]
+    }
+  },
+  {
+    "__docId__": 42,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "emit",
+    "memberof": "src/core/store.js~Store",
+    "longname": "src/core/store.js~Store#emit",
+    "access": null,
+    "description": null,
+    "lineNumber": 173,
+    "ignore": true,
+    "params": [],
+    "generator": false
+  },
+  {
+    "__docId__": 43,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "createStore",
+    "memberof": "src/core/store.js",
+    "longname": "src/core/store.js~createStore",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/core/store",
+    "importStyle": "{createStore}",
+    "description": "Dynamically extends {@link Store} and instantiates the new class.\n\n`options.getInitialState` and either `options.reducer` or `options.reducers` are required.<br />\nWhen both are defined, `options.reducers` takes precedence.<br />\nType requirements are interchangable, meaning either can\ntake {@link Object} or {@link function}.",
+    "examples": [
+      "let counter = createStore({\n  getInitialState() { return 0 },\n  reducers: {\n    inc(state) { return ++state },\n    dec(state) { return --state }\n  }\n})"
+    ],
+    "lineNumber": 202,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Store}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "function(): Any<S>"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options.getInitialState",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "function(state: Any<S>, message: Message): Any<S>"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options.reducer",
+        "description": ""
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options.reducers",
+        "description": "maps {@link Message}#type to reducers"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Store"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 44,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/core/subscriber.js",
+    "memberof": null,
+    "longname": "src/core/subscriber.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import {isObservableState, assign} from '../utils/index.js';\nimport {Component, createElement} from 'react';\nimport ObservableState from './observable/state.js';\n\n\n/**\n * Higher-order component that automatically subscribes to\n * {@link ObservableState} props.\n *\n * @example\n * let text = new ObservableState(\"Foo\");\n *\n * class Label extends React.Component {\n *   render() {\n *     return <div>{this.props.text}</div>;\n *   }\n * }\n * Label = createSubscriber(Label);\n *\n * // Render <Label> with text \"Foo\"\n * React.render(<Label text={text} />, mountPoint);\n *\n * // After 1 second change text to \"Bar\"\n * setTimeout(() => text.setState(\"Bar\"), 1000);\n *\n * @param {React.Component} component - the component to wrap\n * @returns {React.Component}\n */\nexport function createSubscriber(component) {\n\n  let wrapper = function(props, context) {\n    Component.call(this, props, context);\n\n    this.normalProps = {};\n    this.observableProps = {};\n    this.updaters = {};\n\n    let state = {};\n\n    for (let k in this.props) {\n      let prop = this.props[k];\n      if (!isObservableState(prop)) this.normalProps[k] = prop;\n      else {\n        this.observableProps[k] = prop;\n        state[k] = prop.getState()\n      }\n    }\n\n    this.state = state;\n  };\n\n  wrapper.prototype = Object.create(Component.prototype, {\n\n    constructor: {value: wrapper},\n\n    componentWillMount: {value: function() {\n      for (let k in this.observableProps) {\n        let observable = this.observableProps[k];\n        let updater = this.updaters[k] = state => {\n          let updated = {};\n          updated[k] = state;\n          this.setState(updated);\n        };\n        observable.subscribe(updater);\n      }\n    }},\n\n    componentWillUnmount: {value: function() {\n      for (let k in this.updaters) {\n        this.observableProps[k].unsubscribe(this.updaters[k]);\n        delete this.updaters[k];\n      }\n    }},\n\n    componentWillReceiveProps: {value: function(nextProps) {\n      for (let k in this.observableProps) {\n        if (nextProps[k] !== this.observableProps[k])\n          throw new Error(\"Cannot change an observable state prop once initialized. \" +\n           \"To change the value, call setState\")\n      }\n      for (let k in this.normalProps) {\n        if (nextProps[k] === void 0) delete this.normalProps[k];\n      }\n      for (let k in nextProps) {\n        let prop = nextProps[k];\n        if (!(k in this.observableProps)) {\n          if (!isObservableState(prop)) this.normalProps[k] = prop;\n          else throw new Error(\"Cannot change non-observable prop to observable once initialized\")\n        }\n      }\n    }},\n\n    render: {value: function() {\n      return createElement(\n        component,\n        assign({}, this.normalProps, this.state)\n      )\n    }}\n\n  });\n\n  return wrapper;\n\n};\n"
+  },
+  {
+    "__docId__": 45,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "createSubscriber",
+    "memberof": "src/core/subscriber.js",
+    "longname": "src/core/subscriber.js~createSubscriber",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/core/subscriber",
+    "importStyle": "{createSubscriber}",
+    "description": "Higher-order component that automatically subscribes to\n{@link ObservableState} props.",
+    "examples": [
+      "let text = new ObservableState(\"Foo\");\n\nclass Label extends React.Component {\n  render() {\n    return <div>{this.props.text}</div>;\n  }\n}\nLabel = createSubscriber(Label);\n\n// Render <Label> with text \"Foo\"\nReact.render(<Label text={text} />, mountPoint);\n\n// After 1 second change text to \"Bar\"\nsetTimeout(() => text.setState(\"Bar\"), 1000);"
+    ],
+    "lineNumber": 29,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{React.Component}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "React.Component"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "component",
+        "description": "the component to wrap"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "React.Component"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 46,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/index.js",
+    "memberof": null,
+    "longname": "src/index.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "/**\n * @typedef {*} Any\n * @desc Describes any value\n */\n\n/**\n * @typedef {Object} Message\n * @property {string} type\n * @desc `Message` is a pure object type meeting the following criteria:\n *  * No methods;\n *  * Properties are either primitives\n      (numbers, strings, booleans etc.), {@link Array}s or pure {@link Object}s;\n *  * No circular references;\n *  * Has own property `Message#type` ({@link string})\n *\n * @example\n * let message = {\n *  type: \"something-descriptive\"\n * }\n */\n\n/**\n * @external {React.Component} https://www.npmjs.com/package/react\n */\n\nexport {Store, createStore} from './core/store';\nexport {Observable, ObservableState, Subscription} from './core/observable';\nexport {createSubscriber} from './core/subscriber';\nexport {createAction} from './core/action';\n"
+  },
+  {
+    "__docId__": 47,
+    "kind": "typedef",
+    "static": true,
+    "variation": null,
+    "name": "Any",
+    "memberof": "src/index.js",
+    "longname": "src/index.js~Any",
+    "access": null,
+    "description": "Describes any value",
+    "type": {
+      "types": [
+        "*"
+      ],
+      "optional": false,
+      "name": "Any"
+    }
+  },
+  {
+    "__docId__": 48,
+    "kind": "typedef",
+    "static": true,
+    "variation": null,
+    "name": "Message",
+    "memberof": "src/index.js",
+    "longname": "src/index.js~Message",
+    "access": null,
+    "description": "`Message` is a pure object type meeting the following criteria:\n * No methods;\n * Properties are either primitives\n     (numbers, strings, booleans etc.), {@link Array}s or pure {@link Object}s;\n * No circular references;\n * Has own property `Message#type` ({@link string})",
+    "examples": [
+      "let message = {\n type: \"something-descriptive\"\n}"
+    ],
+    "properties": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "type",
+        "description": ""
+      }
+    ],
+    "type": {
+      "types": [
+        "Object"
+      ],
+      "optional": false,
+      "name": "Message"
+    }
+  },
+  {
+    "__docId__": 49,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "React.Component",
+    "externalLink": "https://www.npmjs.com/package/react",
+    "memberof": "src/index.js",
+    "longname": "src/index.js~React.Component",
+    "access": null,
+    "description": null,
+    "lineNumber": 26
+  },
+  {
+    "__docId__": 50,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/utils/index.js",
+    "memberof": null,
+    "longname": "src/utils/index.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import assign from 'object-assign';\nexport {assign};\n\n/**\n * Shorthand for `assign({}, object)`\n * @param {Object} object\n * @returns {Object} cloned `object`\n * @ignore\n */\nexport function clone(object) {\n  return assign({}, object);\n}\n\n/**\n * True if `value.subscribe` and `value.unsubscribe` are methods\n * @function\n * @param {Any} value\n * @returns {boolean}\n * @ignore\n */\nexport function isObservable(value) {\n  return value != null &&\n   typeof value.subscribe === 'function' &&\n   typeof value.unsubscribe === 'function'\n}\n\n/**\n * True if {@link isObservable}(`value`) and `value.getState` is a method\n * @function\n * @param {Any} value\n * @returns {boolean}\n * @ignore\n */\nexport function isObservableState(value) {\n  return isObservable(value) &&\n   typeof value.getState === 'function'\n}\n"
+  },
+  {
+    "__docId__": 51,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "clone",
+    "memberof": "src/utils/index.js",
+    "longname": "src/utils/index.js~clone",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/utils",
+    "importStyle": "{clone}",
+    "description": "Shorthand for `assign({}, object)`",
+    "lineNumber": 10,
+    "ignore": true,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{Object} cloned `object`"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "object",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object"
+      ],
+      "spread": false,
+      "description": "cloned `object`"
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 52,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "isObservable",
+    "memberof": "src/utils/index.js",
+    "longname": "src/utils/index.js~isObservable",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/utils",
+    "importStyle": "{isObservable}",
+    "description": "True if `value.subscribe` and `value.unsubscribe` are methods",
+    "lineNumber": 21,
+    "ignore": true,
+    "unknown": [
+      {
+        "tagName": "@function",
+        "tagValue": ""
+      },
+      {
+        "tagName": "@returns",
+        "tagValue": "{boolean}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "value",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "boolean"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 53,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "isObservableState",
+    "memberof": "src/utils/index.js",
+    "longname": "src/utils/index.js~isObservableState",
+    "access": null,
+    "export": true,
+    "importPath": "fastflux/utils",
+    "importStyle": "{isObservableState}",
+    "description": "True if {@link isObservable}(`value`) and `value.getState` is a method",
+    "lineNumber": 34,
+    "ignore": true,
+    "unknown": [
+      {
+        "tagName": "@function",
+        "tagValue": ""
+      },
+      {
+        "tagName": "@returns",
+        "tagValue": "{boolean}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "value",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "boolean"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 55,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Infinity",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Infinity",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Infinity",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 56,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "NaN",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~NaN",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 57,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "undefined",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~undefined",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 58,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "null",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~null",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 59,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Object",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Object",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 60,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "object",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~object",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 61,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Function",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Function",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 62,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "function",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~function",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 63,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Boolean",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Boolean",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 64,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "boolean",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~boolean",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 65,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Symbol",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Symbol",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 66,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Error",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Error",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 67,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "EvalError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/EvalError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~EvalError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 68,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "InternalError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/InternalError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~InternalError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 69,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "RangeError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~RangeError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 70,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "ReferenceError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~ReferenceError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 71,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "SyntaxError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~SyntaxError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 72,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "TypeError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~TypeError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 73,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "URIError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~URIError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 74,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Number",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Number",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 75,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "number",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~number",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 76,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Date",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Date",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 77,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "String",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~String",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 78,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "string",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~string",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 79,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "RegExp",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~RegExp",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 80,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 81,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int8Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int8Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int8Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 82,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint8Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 83,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint8ClampedArray",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8ClampedArray",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8ClampedArray",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 84,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int16Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int16Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int16Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 85,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint16Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint16Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint16Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 86,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int32Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 87,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint32Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 88,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Float32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Float32Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 89,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Float64Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float64Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Float64Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 90,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Map",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Map",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 91,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Set",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Set",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 92,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "WeakMap",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakMap",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 93,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "WeakSet",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakSet",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 94,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "ArrayBuffer",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~ArrayBuffer",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 95,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "DataView",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~DataView",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 96,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "JSON",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~JSON",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 97,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Promise",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Promise",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 98,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Generator",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Generator",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 99,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "GeneratorFunction",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/GeneratorFunction",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~GeneratorFunction",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 100,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Reflect",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Reflect",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 101,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Proxy",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Proxy",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 103,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "CanvasRenderingContext2D",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~CanvasRenderingContext2D",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 104,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "DocumentFragment",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~DocumentFragment",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 105,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Element",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Element",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Element",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 106,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Event",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Event",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Event",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 107,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Node",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Node",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Node",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 108,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "NodeList",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/NodeList",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~NodeList",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 109,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "XMLHttpRequest",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~XMLHttpRequest",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 110,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "AudioContext",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/AudioContext",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~AudioContext",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  }
+]

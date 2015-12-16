@@ -1,0 +1,49 @@
+{
+  "name": "fastflux",
+  "version": "0.1.12",
+  "description": "Lightweight FRP-inspired flux implementation",
+  "keywords": [
+    "flux",
+    "frp",
+    "functional",
+    "redux",
+    "react"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rvikmanis/fastflux.git"
+  },
+  "main": "./index",
+  "author": "Rudolfs Vikmanis <rudolfs.vikmanis@gmail.com> (https://github.com/rvikmanis)",
+  "license": "MIT",
+  "dependencies": {
+    "object-assign": "^4.0.1",
+    "react": "^0.14.1"
+  },
+  "scripts": {
+    "test": "gulp test",
+    "prepublish": "gulp build",
+    "postpublish": "gulp clean"
+  },
+  "devDependencies": {
+    "babel": "^5.6.4",
+    "babel-core": "^5.6.18",
+    "babel-loader": "^5.3.1",
+    "cheerio": "^0.19.0",
+    "del": "^1.2.0",
+    "esdoc": "^0.4.3",
+    "esdoc-es7-plugin": "0.0.3",
+    "esdoc-importpath-plugin": "0.0.1",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.1.0",
+    "gulp-istanbul": "^0.10.2",
+    "gulp-jasmine": "^2.2.0",
+    "gulp-util": "^3.0.5",
+    "jasmine": "^2.3.2",
+    "jasmine-spec-reporter": "^2.4.0",
+    "mock-browser": "^0.91.34",
+    "node-libs-browser": "^0.5.2",
+    "react-dom": "^0.14.1",
+    "webpack": "^1.9.11"
+  }
+}
