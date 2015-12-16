@@ -57,7 +57,7 @@ export default class ObservableState extends Observable {
 
 
   /**
-   * Same as {@link Observable#emit}. Additionally sets
+   * Same as {@link Observable#emit}, but sets
    * current state to `value`
    *
    * @param {Any} value - new state

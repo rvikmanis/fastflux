@@ -33,7 +33,7 @@ gulp.task('clean:test', function(callback) {
 });
 
 gulp.task('clean:docs', function(callback) {
-    del(['docs'], function() {
+    del(['docs/html'], function() {
       callback()
     })
 });
@@ -56,7 +56,7 @@ gulp.task("build:webpack", ["clean:webpack"], function (callback) {
 
 gulp.task("build:docs", ["clean:docs"], function(callback) {
     exec("./node_modules/.bin/esdoc"+
-         " -c esdoc.json",
+         " -c config/esdoc.json",
       function(err) {
         callback(err);
       });

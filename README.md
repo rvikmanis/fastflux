@@ -13,7 +13,7 @@ and [Redux](https://github.com/rackt/redux).
 
 Install from npm:
 
-```bash
+```plain
 npm install fastflux
 ```
 
@@ -73,40 +73,25 @@ State of `items`: ["bar", "foobar", "baz"]
 import {createSubscriber} from 'fastflux';
 import {Component} from 'react';
 
-// Define root component
-class ControllerView extends Component {
-  render() {
-    // State of the `items` store is bound to `this.props.items`
-    let items = this.props.items.map(item => <li>{item}</li>);
-    return <div>
-      <ul>{items}</ul>
-      <NewItemInput />
-    </div>;
-  }
-}
+// Define input
+class ItemInput extends Component {
 
-// Subscriber observes stores it receives through props:
-// When a store emits new state, subscriber updates the
-// wrapped component's prop of the same name.
-ControllerView = createSubscriber(ControllerView);
-
-
-class NewItemInput extends Component {
-
-  INITIAL_VALUE = "";
-  state = {value: this.INITIAL_VALUE};
+  state = {value: ""};
 
   onKeyDown = (e) => {
-    // Invoke action!
     if (e.key === "Enter") {
+      // Invoke action
       addItem(e.target.value);
-      this.setState({value: this.INITIAL_VALUE});
+      this.clearValue();
     }
   };
 
   onChange = (e) => {
-    this.setState({value: e.target.value});
+    this.setValue(e.target.value)
   };
+
+  setValue = (value) => this.setState({value});
+  clearValue = () => this.setValue("");
 
   render() {
     return <input
@@ -118,6 +103,21 @@ class NewItemInput extends Component {
   }
 
 }
+
+// Define root component
+function ControllerView(props) {
+  // `props.items` contains current state of the `items` store
+  let items = props.items.map(item => <li>{item}</li>);
+  return <div>
+    <ul>{items}</ul>
+    <ItemInput />
+  </div>;
+}
+
+// Subscriber observes stores passed in props:
+// When a store emits new state, subscriber updates wrapped component's prop.
+ControllerView = createSubscriber(ControllerView);
+let rootComponent = <ControllerView items={items}>;
 ```
 
 ##### Render
@@ -126,5 +126,5 @@ Assuming you have `<div id="mount"></div>` in your document body:
 
 ```js
 import {render} from 'react-dom';
-render(<ControllerView items={items}>, document.querySelector("#mount"))
+render(rootComponent, document.querySelector("#mount"))
 ```

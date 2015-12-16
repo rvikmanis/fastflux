@@ -1,9 +1,20 @@
 {
   "source": "./src",
-  "destination": "./docs",
+  "destination": "./docs/html",
+  "scripts": [
+    "./config/esdoc/scripts/prism.js"
+  ],
+  "styles": [
+    "./config/esdoc/styles/custom.css",
+    "./config/esdoc/styles/prism.css"
+  ],
   "plugins": [
 
     {"name": "esdoc-es7-plugin"},
+
+    {
+      "name": "./config/esdoc/plugin.js"
+    },
 
     {
       "name": "esdoc-importpath-plugin",

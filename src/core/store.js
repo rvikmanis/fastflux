@@ -2,8 +2,9 @@ import ObservableState from './observable/state.js';
 
 
 /**
- * *This class is abstract*
+ * Container for application state and logic.
  *
+ * *This class is abstract and cannot be instantiated.*
  *
  * ## Implementing `Store`
  * A store:
@@ -21,7 +22,6 @@ import ObservableState from './observable/state.js';
  *           {[string]: function(state: Any<S>, message: Message): Any<S>}
  *
  *
- * <br />
  * #### Single reducer variant:
  *
  *     let logger = new class extends Store {
@@ -49,9 +49,7 @@ import ObservableState from './observable/state.js';
  *       }
  *     }
  *
- * <br/>
  * > **Note:** you can also create a store  with {@link createStore}.
- * <br />
  *
  * -----------
  * @example

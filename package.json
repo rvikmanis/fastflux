@@ -1,7 +1,18 @@
 {
   "name": "fastflux",
   "version": "0.1.10",
-  "description": "Flux architecture implementation",
+  "description": "Lightweight FRP-inspired flux implementation",
+  "keywords": [
+    "flux",
+    "frp",
+    "functional",
+    "redux",
+    "react"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rvikmanis/fastflux.git"
+  },
   "main": "./index",
   "author": "Rudolfs Vikmanis <rudolfs.vikmanis@gmail.com> (https://github.com/rvikmanis)",
   "license": "MIT",
@@ -18,6 +29,7 @@
     "babel": "^5.6.4",
     "babel-core": "^5.6.18",
     "babel-loader": "^5.3.1",
+    "cheerio": "^0.19.0",
     "del": "^1.2.0",
     "esdoc": "^0.4.3",
     "esdoc-es7-plugin": "0.0.3",

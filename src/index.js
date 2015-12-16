@@ -13,7 +13,7 @@
  *  * No circular references;
  *  * Has own property `Message#type` ({@link string})
  *
- * @example <caption>Valid message without fields</caption>
+ * @example
  * let message = {
  *  type: "something-descriptive"
  * }
@@ -24,6 +24,6 @@
  */
 
 export {Store, createStore} from './core/store';
-export {Observable, ObservableState} from './core/observable';
+export {Observable, ObservableState, Subscription} from './core/observable';
 export {createSubscriber} from './core/subscriber';
 export {createAction} from './core/action';

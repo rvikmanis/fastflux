@@ -1,4 +1,5 @@
 import ObservableState from './state';
+import Subscription from './subscription';
 
 /**
  * @example
@@ -16,12 +17,23 @@ export default class Observable<T> {
    * Register listener
    * @param {function} listener
    * @throws {Error} if `listener` is already subscribed to this observable
+   * @returns {Subscription}
    */
   subscribe(listener: (v: T) => void): void {
-    if (this._listeners.indexOf(listener) === -1)
+    if (this._listeners.indexOf(listener) === -1) {
       this._listeners.push(listener);
-    else
-      throw new Error("subscribe: cannot register twice");
+      return new Subscription(this, listener);
+    }
+    else throw new Error("subscribe: cannot register twice");
+  }
+
+  /**
+   * True if `listener` has subscribed to `this` observable
+   * @param {function} listener
+   * @returns {boolean}
+   */
+  hasSubscribed(listener: (v: T) => void): boolean {
+    return this._listeners.indexOf(listener) !== -1
   }
 
   /**
