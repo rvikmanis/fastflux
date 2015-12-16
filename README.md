@@ -1,13 +1,9 @@
 # Fastflux
 
-[![Documentation Status](https://doc.esdoc.org/github.com/rvikmanis/fastflux/badge.svg)](https://doc.esdoc.org/github.com/rvikmanis/fastflux)
-
 A lightweight message driven flux implementation written in ES6,
 inspired by [FRP](https://en.wikipedia.org/wiki/Functional_reactive_programming),
 the [original Flux](https://facebook.github.io/flux/docs/overview.html)
 and [Redux](https://github.com/rackt/redux).
-
-**[API reference](https://doc.esdoc.org/github.com/rvikmanis/fastflux)**
 
 ## Installation
 
