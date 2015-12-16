@@ -6,7 +6,7 @@ import ObservableState from './observable/state.js';
  *
  * *This class is abstract and cannot be instantiated.*
  *
- * ## Implementing `Store`
+ * ## Implementing
  * A store:
  *  1. Must have instance method `getInitialState` with signature:
  *

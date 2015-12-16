@@ -64,6 +64,10 @@ pre[class*="language-"] {
 	white-space: normal;
 }
 
+pre {
+  background: transparent !important;
+}
+
 .token.comment,
 .token.prolog,
 .token.doctype,
@@ -154,6 +158,9 @@ pre.line-numbers > code {
 	width: 3em; /* works for line-numbers below 1000 lines */
 	letter-spacing: -1px;
 	border-right: 1px solid #999;
+
+  padding-top: 11px;
+  padding-bottom: 11px;
 
 	-webkit-user-select: none;
 	-moz-user-select: none;

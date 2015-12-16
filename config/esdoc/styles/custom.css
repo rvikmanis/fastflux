@@ -15,6 +15,10 @@ pre > code {
   padding: 15px !important;
 }
 
+.example-caption {
+  background: transparent;
+}
+
 code {
   font-family: "Source Code Pro", monospace;
   font-size: 13px !important;
@@ -27,6 +31,15 @@ pre {
 h4 {
   margin-bottom: 7px;
   margin-top: 16px;
+}
+
+h1 > code,
+h2 > code,
+h3 > code,
+h3 > code,
+h5 > code,
+h6 > code {
+  font-size: 1em !important;
 }
 
 blockquote {

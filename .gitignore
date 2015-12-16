@@ -1,8 +1,8 @@
 /node_modules
 /coverage
-#/docs
-#/dist
-#/core
-#/utils
-#/index.js
+/docs/html
+/dist
+/core
+/utils
+/index.js
 .idea
