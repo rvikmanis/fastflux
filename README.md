@@ -7,7 +7,43 @@ inspired by [FRP](https://en.wikipedia.org/wiki/Functional_reactive_programming)
 the [original Flux](https://facebook.github.io/flux/docs/overview.html)
 and [Redux](https://github.com/rackt/redux).
 
-**[API reference](http://rvikmanis.github.io/fastflux/identifiers.html)**
+- [Introduction](#introduction)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [API Reference](http://rvikmanis.github.io/fastflux/identifiers.html)
+
+## Introduction
+
+Fastflux is a simple application state management library; meant to be the *Model*, and to some extent *Controller*, in your **M-V-C** stack, with [React](https://facebook.github.io/react/) as the *View*.
+
+##### Why?
+
+Creating rich user interfaces in React is simple and fun, but React was never meant to do the job alone, it is not a full web framework.
+
+Say, you need to add new semi-global state to your application of 15 levels of nested components. How will you do it? Add the state to nearest common parent component and pass it down through props? Gets tedious fast, right? We call it *prop hell*.
+
+Fastflux keeps the **state decoupled from components**, allowing you to keep your app and your mind free from grandiose prop hierarchies, letting you focus on what matters most - application logic.
+
+##### How?
+
+Fastflux is a flux-like library, meaning it follows the same "data flows one way" pattern as React. Learn more about the Flux architecture from [the official docs](http://facebook.github.io/flux/docs/overview.html#content).
+
+Architecture of Fastflux and its differences and similarities to classic Flux are explained in the next section.
+
+
+## Architecture
+
+How data flows in a typical Fastflux application:
+
+![Architecture](http://s14.postimg.org/orljt6rbl/fastflux.png)
+
+- **Stores** are state containers, coupled with one or more *reducers* -- pure functions describing the transformation of state in response to messages.
+- **Messages** -- plain objects identified by `type`, optionally containing data fields -- primarily used to signal stores about some event (data received from server, user pressed key etc.). Known from classic Flux as *actions*.
+- **Actions**, unlike in classic Flux, are self-contained asynchronous functions for a concrete task (create post, logout user etc.). Usually invoked by views, other actions or events from the environment. Subscribers (stores, other actions, even views) listen to actions for messages that can be emitted multiple times per invocation. IO and side effects are permitted.
+- **Views** -- React components. Can listen to stores for state changes. Additionally views may listen to actions for messages when a short feedback cycle is desired (e.g. input error handling), without polluting the stores.
+
+There is no central dispatcher as in classic Flux -- stores subscribe directly to the actions they need.
 
 ## Installation
 
@@ -17,7 +53,7 @@ Install from npm:
 npm install fastflux
 ```
 
-## Getting started
+## Getting Started
 
 This introduction assumes familiarity with ES6 and React.
 
