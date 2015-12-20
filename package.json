@@ -1,6 +1,6 @@
 {
   "name": "fastflux",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Lightweight FRP-inspired flux implementation",
   "keywords": [
     "flux",

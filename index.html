@@ -50,14 +50,41 @@
 </nav>
 
 <div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="fastflux">Fastflux</h1>
+<p><a href="http://rvikmanis.github.io/fastflux/source.html"><img src="http://rvikmanis.github.io/fastflux/badge.svg" alt="Documentation Status"></a></p>
 <p>A lightweight message driven flux implementation written in ES6,
 inspired by <a href="https://en.wikipedia.org/wiki/Functional_reactive_programming">FRP</a>,
 the <a href="https://facebook.github.io/flux/docs/overview.html">original Flux</a>
 and <a href="https://github.com/rackt/redux">Redux</a>.</p>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="http://rvikmanis.github.io/fastflux/identifiers.html">API Reference</a></li>
+</ul>
+<h2 id="introduction">Introduction</h2>
+<p>Fastflux is a simple application state management library; meant to be the <em>Model</em>, and to some extent <em>Controller</em>, in your <strong>M-V-C</strong> stack, with <a href="https://facebook.github.io/react/">React</a> as the <em>View</em>.</p>
+<h5 id="why-">Why?</h5>
+<p>Creating rich user interfaces in React is simple and fun, but React was never meant to do the job alone, it is not a full web framework.</p>
+<p>Say, you need to add new semi-global state to your application of 15 levels of nested components. How will you do it? Add the state to nearest common parent component and pass it down through props? Gets tedious fast, right? We call it <em>prop hell</em>.</p>
+<p>Fastflux keeps the <strong>state decoupled from components</strong>, allowing you to keep your app and your mind free from grandiose prop hierarchies, letting you focus on what matters most - application logic.</p>
+<h5 id="how-">How?</h5>
+<p>Fastflux is a flux-like library, meaning it follows the same &quot;data flows one way&quot; pattern as React. Learn more about the Flux architecture from <a href="http://facebook.github.io/flux/docs/overview.html#content">the official docs</a>.</p>
+<p>Architecture of Fastflux and its differences and similarities to classic Flux are explained in the next section.</p>
+<h2 id="architecture">Architecture</h2>
+<p>How data flows in a typical Fastflux application:</p>
+<p><img src="http://s14.postimg.org/orljt6rbl/fastflux.png" alt="Architecture"></p>
+<ul>
+<li><strong>Stores</strong> are state containers, coupled with one or more <em>reducers</em> -- pure functions describing the transformation of state in response to messages.</li>
+<li><strong>Messages</strong> -- plain objects identified by <code>type</code>, optionally containing data fields -- primarily used to signal stores about some event (data received from server, user pressed key etc.). Known from classic Flux as <em>actions</em>.</li>
+<li><strong>Actions</strong>, unlike in classic Flux, are self-contained asynchronous functions for a concrete task (create post, logout user etc.). Usually invoked by views, other actions or events from the environment. Subscribers (stores, other actions, even views) listen to actions for messages that can be emitted multiple times per invocation. IO and side effects are permitted.</li>
+<li><strong>Views</strong> -- React components. Can listen to stores for state changes. Additionally views may listen to actions for messages when a short feedback cycle is desired (e.g. input error handling), without polluting the stores.</li>
+</ul>
+<p>There is no central dispatcher as in classic Flux -- stores subscribe directly to the actions they need.</p>
 <h2 id="installation">Installation</h2>
 <p>Install from npm:</p>
 <pre><code class="lang-plain language-js">npm install fastflux</code></pre>
-<h2 id="getting-started">Getting started</h2>
+<h2 id="getting-started">Getting Started</h2>
 <p>This introduction assumes familiarity with ES6 and React.</p>
 <h3 id="create-your-first-store-and-action">Create your first store and action</h3>
 <pre><code class="lang-js language-js">import {createStore, createAction} from &apos;fastflux&apos;;
