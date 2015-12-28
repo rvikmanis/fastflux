@@ -66,9 +66,10 @@
 </ul>
 <h2 id="introduction">Introduction</h2>
 <p>Simple and powerful application state management for <a href="https://facebook.github.io/react/">React</a>,
-based on the <a href="https://facebook.github.io/flux/">Flux architecture</a>. Implemented with a
+based on the <a href="https://facebook.github.io/flux/">Flux architecture</a>. Implemented with
 <a href="https://en.wikipedia.org/wiki/Functional_reactive_programming">functional reactive</a>
-mindset.</p>
+primitives: single-event stream -- <code>Observable</code> (<a href="http://rvikmanis.github.io/fastflux/class/src/core/observable/base.js~Observable.html">API</a>), and its stateful
+counterpart -- <code>ObservableState</code> (<a href="http://rvikmanis.github.io/fastflux/class/src/core/observable/state.js~ObservableState.html">API</a>).</p>
 <p>In MVC parlance Fastflux is the <em>Model</em>.</p>
 <h3 id="why-">Why?</h3>
 <p>React is a view component library, not a web framework; it renders application state,
@@ -84,17 +85,12 @@ in which <strong>state is decoupled from components</strong> --
 defined separately and passed directly to the components that need it. So
 instead of constantly having to update byzantine prop hierarchies,
 you get more time to design and implement your application.</p>
-<p><em>Fastflux is a particular implementation of this architecture, based on functional
-reactive primitives:<br>
-a single-event stream -- </em><code>Observable</code><em>, and its stateful
-counterpart -- </em><code>ObservableState</code><em>.</em></p>
+<p><em>Fastflux is a particular implementation of this architecture</em></p>
 <p>Further info about the Flux architecture:</p>
 <ul>
 <li><a href="https://facebook.github.io/flux/docs/overview.html#content">Official documentation</a></li>
 <li><a href="https://github.com/facebook/flux">Reference implementation</a></li>
 </ul>
-<h2 id="do-we-need-yet-another-flux-library-">Do we need yet another Flux library?</h2>
-<p>Yeah, we do.</p>
 <h2 id="architecture-overview">Architecture overview</h2>
 <p>How data flows in a typical Fastflux application:</p>
 <p><img src="http://s9.postimg.org/eexgjcn27/fastflux.png" alt="Data flow"></p>
@@ -147,7 +143,7 @@ let items = createStore({
   }
 });</code></pre>
 <h3 id="create-action">Create action</h3>
-<pre><code class="lang-js language-js">import {createStore} from &apos;fastflux&apos;;
+<pre><code class="lang-js language-js">import {createAction} from &apos;fastflux&apos;;
 
 let addItem = createAction(emit =&gt; text =&gt; {
   emit({type: &quot;add&quot;, text})
