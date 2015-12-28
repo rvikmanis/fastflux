@@ -50,46 +50,91 @@
 </nav>
 
 <div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="fastflux">Fastflux</h1>
-<p><a href="http://rvikmanis.github.io/fastflux/source.html"><img src="http://rvikmanis.github.io/fastflux/badge.svg" alt="Documentation Status"></a></p>
-<p>A lightweight message driven flux implementation written in ES6,
-inspired by <a href="https://en.wikipedia.org/wiki/Functional_reactive_programming">FRP</a>,
-the <a href="https://facebook.github.io/flux/docs/overview.html">original Flux</a>
-and <a href="https://github.com/rackt/redux">Redux</a>.</p>
+<p><a href="https://www.npmjs.com/package/fastflux"><img src="https://img.shields.io/npm/dt/fastflux.svg?style=flat-square" alt="Downloads"></a>
+<a href="https://www.npmjs.com/package/fastflux"><img src="https://img.shields.io/npm/dm/fastflux.svg?style=flat-square" alt="Downloads/month"></a></p>
 <ul>
 <li><a href="#introduction">Introduction</a></li>
-<li><a href="#architecture">Architecture</a></li>
+<li><a href="#architecture-overview">Architecture overview</a></li>
 <li><a href="#installation">Installation</a></li>
-<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#usage">Usage</a><ul>
+<li><a href="#create-store">Create store</a></li>
+<li><a href="#create-action">Create action</a></li>
+<li><a href="#create-components">Create components</a></li>
+</ul>
+</li>
 <li><a href="http://rvikmanis.github.io/fastflux/identifiers.html">API Reference</a></li>
 </ul>
 <h2 id="introduction">Introduction</h2>
-<p>Fastflux is a simple application state management library; meant to be the <em>Model</em>, and to some extent <em>Controller</em>, in your <strong>M-V-C</strong> stack, with <a href="https://facebook.github.io/react/">React</a> as the <em>View</em>.</p>
-<h5 id="why-">Why?</h5>
-<p>Creating rich user interfaces in React is simple and fun, but React was never meant to do the job alone, it is not a full web framework.</p>
-<p>Say, you need to add new semi-global state to your application of 15 levels of nested components. How will you do it? Add the state to nearest common parent component and pass it down through props? Gets tedious fast, right? We call it <em>prop hell</em>.</p>
-<p>Fastflux keeps the <strong>state decoupled from components</strong>, allowing you to keep your app and your mind free from grandiose prop hierarchies, letting you focus on what matters most - application logic.</p>
-<h5 id="how-">How?</h5>
-<p>Fastflux is a flux-like library, meaning it follows the same &quot;data flows one way&quot; pattern as React. Learn more about the Flux architecture from <a href="http://facebook.github.io/flux/docs/overview.html#content">the official docs</a>.</p>
-<p>Architecture of Fastflux and its differences and similarities to classic Flux are explained in the next section.</p>
-<h2 id="architecture">Architecture</h2>
-<p>How data flows in a typical Fastflux application:</p>
-<p><img src="http://s14.postimg.org/orljt6rbl/fastflux.png" alt="Architecture"></p>
+<p>Simple and powerful application state management for <a href="https://facebook.github.io/react/">React</a>,
+based on the <a href="https://facebook.github.io/flux/">Flux architecture</a>. Implemented with a
+<a href="https://en.wikipedia.org/wiki/Functional_reactive_programming">functional reactive</a>
+mindset.</p>
+<p>In MVC parlance Fastflux is the <em>Model</em>.</p>
+<h3 id="why-">Why?</h3>
+<p>React is a view component library, not a web framework; it renders application state,
+but says nothing on how to manage that state across your application.</p>
+<p>When starting out with React, that is never a problem: state can be defined
+in a root component and passed down to the rest of the tree by props.
+This approach is workable, for very simple applications.</p>
+<p>If however, you&apos;re building something non-trivial (the bar for triviality being very low here),
+you&apos;ll likely have multiple deeply nested trees of components. Passing state and
+callbacks by props through every level would be tedious and frustrating.  </p>
+<p>The solution is to use the modular message driven architecture, called Flux,
+in which <strong>state is decoupled from components</strong> --
+defined separately and passed directly to the components that need it. So
+instead of constantly having to update byzantine prop hierarchies,
+you get more time to design and implement your application.</p>
+<p><em>Fastflux is a particular implementation of this architecture, based on functional
+reactive primitives:<br>
+a single-event stream -- </em><code>Observable</code><em>, and its stateful
+counterpart -- </em><code>ObservableState</code><em>.</em></p>
+<p>Further info about the Flux architecture:</p>
 <ul>
-<li><strong>Stores</strong> are state containers, coupled with one or more <em>reducers</em> -- pure functions describing the transformation of state in response to messages.</li>
-<li><strong>Messages</strong> -- plain objects identified by <code>type</code>, optionally containing data fields -- primarily used to signal stores about some event (data received from server, user pressed key etc.). Known from classic Flux as <em>actions</em>.</li>
-<li><strong>Actions</strong>, unlike in classic Flux, are self-contained asynchronous functions for a concrete task (create post, logout user etc.). Usually invoked by views, other actions or events from the environment. Subscribers (stores, other actions, even views) listen to actions for messages that can be emitted multiple times per invocation. IO and side effects are permitted.</li>
-<li><strong>Views</strong> -- React components. Can listen to stores for state changes. Additionally views may listen to actions for messages when a short feedback cycle is desired (e.g. input error handling), without polluting the stores.</li>
+<li><a href="https://facebook.github.io/flux/docs/overview.html#content">Official documentation</a></li>
+<li><a href="https://github.com/facebook/flux">Reference implementation</a></li>
 </ul>
-<p>There is no central dispatcher as in classic Flux -- stores subscribe directly to the actions they need.</p>
+<h2 id="do-we-need-yet-another-flux-library-">Do we need yet another Flux library?</h2>
+<p>Yeah, we do.</p>
+<h2 id="architecture-overview">Architecture overview</h2>
+<p>How data flows in a typical Fastflux application:</p>
+<p><img src="http://s9.postimg.org/eexgjcn27/fastflux.png" alt="Data flow"></p>
+<ul>
+<li><strong>Stores</strong> are state containers, coupled with one or more reducers.</li>
+<li><strong>Reducers</strong> -- pure functions describing the transformation of state in response to messages.</li>
+<li><strong>Messages</strong> -- plain objects identified by <code>type</code>, optionally containing data fields.<ul>
+<li>Used to signal stores about some event (data received from server, user pressed key etc.).</li>
+<li>Known in classic Flux as <em>actions</em>.</li>
+</ul>
+</li>
+<li><strong>Actions</strong> are self-contained asynchronous functions for a concrete task (create post, logout user etc.).<ul>
+<li>Usually invoked by views, other actions or events from the environment.</li>
+<li>Subscribers are stores, other actions and views.</li>
+<li>When subscribed by stores, emitted payload MUST be a message.</li>
+<li>Can emit zero or more times per invocation.</li>
+<li>IO and side effects are permitted.</li>
+<li>You may think of actions as async
+<em>action creators</em> from classic Flux, when subscribed by stores.</li>
+</ul>
+</li>
+<li><strong>Views</strong> are React components.<ul>
+<li>Should listen to stores for state changes.</li>
+<li>May listen to actions directly, without polluting the stores, when a short
+feedback cycle is desired.</li>
+<li><em>Subscriber view</em> is a special type of higher-order view component that automatically
+subscribes to stores passed as props.</li>
+</ul>
+</li>
+</ul>
+<p><br>
+There is no central dispatcher -- stores subscribe to the actions they need.</p>
 <h2 id="installation">Installation</h2>
 <p>Install from npm:</p>
-<pre><code class="lang-plain language-js">npm install fastflux</code></pre>
-<h2 id="getting-started">Getting Started</h2>
-<p>This introduction assumes familiarity with ES6 and React.</p>
-<h3 id="create-your-first-store-and-action">Create your first store and action</h3>
-<pre><code class="lang-js language-js">import {createStore, createAction} from &apos;fastflux&apos;;
+<pre><code class="lang-plain language-js">npm install --save fastflux</code></pre>
+<h2 id="usage">Usage</h2>
+<p>These are ES6 examples.</p>
+<h3 id="create-store">Create store</h3>
+<pre><code class="lang-js language-js">import {createStore} from &apos;fastflux&apos;;
 
-// Define store
 let items = createStore({
   getInitialState() {return []},
 
@@ -100,9 +145,10 @@ let items = createStore({
     }
 
   }
-});
+});</code></pre>
+<h3 id="create-action">Create action</h3>
+<pre><code class="lang-js language-js">import {createStore} from &apos;fastflux&apos;;
 
-// Define action
 let addItem = createAction(emit =&gt; text =&gt; {
   emit({type: &quot;add&quot;, text})
 });
@@ -114,7 +160,7 @@ addItem.subscribe(items.send);</code></pre>
 items.subscribe(s =&gt; console.log(&quot;State of `items`:&quot;, s))
 
 // While we&apos;re at it, let&apos;s create some items
-[&quot;bar&quot;, &quot;foobar&quot;, &quot;baz&quot;].forEach(addItem);</code></pre>
+;[&quot;bar&quot;, &quot;foobar&quot;, &quot;baz&quot;].forEach(addItem)</code></pre>
 <p>Open the console, you will see something like this:</p>
 <pre><code class="lang-plain language-js">State of `items`: [&quot;bar&quot;]
 State of `items`: [&quot;bar&quot;, &quot;foobar&quot;]

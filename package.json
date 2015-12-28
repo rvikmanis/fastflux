@@ -1,13 +1,14 @@
 {
   "name": "fastflux",
-  "version": "0.1.13",
-  "description": "Lightweight FRP-inspired flux implementation",
+  "version": "0.1.14",
+  "description": "Message driven reactive state management",
   "keywords": [
     "flux",
     "frp",
     "functional",
     "redux",
-    "react"
+    "react",
+    "reactive"
   ],
   "repository": {
     "type": "git",
