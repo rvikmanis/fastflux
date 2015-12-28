@@ -15,9 +15,10 @@
 ## Introduction
 
 Simple and powerful application state management for [React](https://facebook.github.io/react/),
-based on the [Flux architecture](https://facebook.github.io/flux/). Implemented with a
+based on the [Flux architecture](https://facebook.github.io/flux/). Implemented with
 [functional reactive](https://en.wikipedia.org/wiki/Functional_reactive_programming)
-mindset.
+primitives: single-event stream -- `Observable` ([API](http://rvikmanis.github.io/fastflux/class/src/core/observable/base.js~Observable.html)), and its stateful
+counterpart -- `ObservableState` ([API](http://rvikmanis.github.io/fastflux/class/src/core/observable/state.js~ObservableState.html)).
 
 In MVC parlance Fastflux is the *Model*.
 
@@ -40,18 +41,11 @@ defined separately and passed directly to the components that need it. So
 instead of constantly having to update byzantine prop hierarchies,
 you get more time to design and implement your application.
 
-*Fastflux is a particular implementation of this architecture, based on functional
-reactive primitives:<br>
-a single-event stream -- *`Observable`*, and its stateful
-counterpart -- *`ObservableState`*.*
+*Fastflux is a particular implementation of this architecture*
 
 Further info about the Flux architecture:
 * [Official documentation](https://facebook.github.io/flux/docs/overview.html#content)
 * [Reference implementation](https://github.com/facebook/flux)
-
-## Do we need yet another Flux library?
-
-Yeah, we do.
 
 ## Architecture overview
 
@@ -115,7 +109,7 @@ let items = createStore({
 ### Create action
 
 ```js
-import {createStore} from 'fastflux';
+import {createAction} from 'fastflux';
 
 let addItem = createAction(emit => text => {
   emit({type: "add", text})
