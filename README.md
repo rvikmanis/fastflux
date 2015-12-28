@@ -1,68 +1,104 @@
 # Fastflux
 
-[![Documentation Status](http://rvikmanis.github.io/fastflux/badge.svg)](http://rvikmanis.github.io/fastflux/source.html)
-
-A lightweight message driven flux implementation written in ES6,
-inspired by [FRP](https://en.wikipedia.org/wiki/Functional_reactive_programming),
-the [original Flux](https://facebook.github.io/flux/docs/overview.html)
-and [Redux](https://github.com/rackt/redux).
+[![Downloads](https://img.shields.io/npm/dt/fastflux.svg?style=flat-square)](https://www.npmjs.com/package/fastflux)
+[![Downloads/month](https://img.shields.io/npm/dm/fastflux.svg?style=flat-square)](https://www.npmjs.com/package/fastflux)
 
 - [Introduction](#introduction)
-- [Architecture](#architecture)
+- [Architecture overview](#architecture-overview)
 - [Installation](#installation)
-- [Getting Started](#getting-started)
+- [Usage](#usage)
+  - [Create store](#create-store)
+  - [Create action](#create-action)
+  - [Create components](#create-components)
 - [API Reference](http://rvikmanis.github.io/fastflux/identifiers.html)
 
 ## Introduction
 
-Fastflux is a simple application state management library; meant to be the *Model*, and to some extent *Controller*, in your **M-V-C** stack, with [React](https://facebook.github.io/react/) as the *View*.
+Simple and powerful application state management for [React](https://facebook.github.io/react/),
+based on the [Flux architecture](https://facebook.github.io/flux/). Implemented with a
+[functional reactive](https://en.wikipedia.org/wiki/Functional_reactive_programming)
+mindset.
 
-##### Why?
+In MVC parlance Fastflux is the *Model*.
 
-Creating rich user interfaces in React is simple and fun, but React was never meant to do the job alone, it is not a full web framework.
+### Why?
 
-Say, you need to add new semi-global state to your application of 15 levels of nested components. How will you do it? Add the state to nearest common parent component and pass it down through props? Gets tedious fast, right? We call it *prop hell*.
+React is a view component library, not a web framework; it renders application state,
+but says nothing on how to manage that state across your application.
 
-Fastflux keeps the **state decoupled from components**, allowing you to keep your app and your mind free from grandiose prop hierarchies, letting you focus on what matters most - application logic.
+When starting out with React, that is never a problem: state can be defined
+in a root component and passed down to the rest of the tree by props.
+This approach is workable, for very simple applications.
 
-##### How?
+If however, you're building something non-trivial (the bar for triviality being very low here),
+you'll likely have multiple deeply nested trees of components. Passing state and
+callbacks by props through every level would be tedious and frustrating.  
 
-Fastflux is a flux-like library, meaning it follows the same "data flows one way" pattern as React. Learn more about the Flux architecture from [the official docs](http://facebook.github.io/flux/docs/overview.html#content).
+The solution is to use the modular message driven architecture, called Flux,
+in which **state is decoupled from components** --
+defined separately and passed directly to the components that need it. So
+instead of constantly having to update byzantine prop hierarchies,
+you get more time to design and implement your application.
 
-Architecture of Fastflux and its differences and similarities to classic Flux are explained in the next section.
+*Fastflux is a particular implementation of this architecture, based on functional
+reactive primitives:<br>
+a single-event stream -- *`Observable`*, and its stateful
+counterpart -- *`ObservableState`*.*
 
+Further info about the Flux architecture:
+* [Official documentation](https://facebook.github.io/flux/docs/overview.html#content)
+* [Reference implementation](https://github.com/facebook/flux)
 
-## Architecture
+## Do we need yet another Flux library?
+
+Yeah, we do.
+
+## Architecture overview
 
 How data flows in a typical Fastflux application:
 
-![Architecture](http://s14.postimg.org/orljt6rbl/fastflux.png)
+![Data flow](http://s9.postimg.org/eexgjcn27/fastflux.png)
 
-- **Stores** are state containers, coupled with one or more *reducers* -- pure functions describing the transformation of state in response to messages.
-- **Messages** -- plain objects identified by `type`, optionally containing data fields -- primarily used to signal stores about some event (data received from server, user pressed key etc.). Known from classic Flux as *actions*.
-- **Actions**, unlike in classic Flux, are self-contained asynchronous functions for a concrete task (create post, logout user etc.). Usually invoked by views, other actions or events from the environment. Subscribers (stores, other actions, even views) listen to actions for messages that can be emitted multiple times per invocation. IO and side effects are permitted.
-- **Views** -- React components. Can listen to stores for state changes. Additionally views may listen to actions for messages when a short feedback cycle is desired (e.g. input error handling), without polluting the stores.
+- **Stores** are state containers, coupled with one or more reducers.
+- **Reducers** -- pure functions describing the transformation of state in response to messages.
+- **Messages** -- plain objects identified by `type`, optionally containing data fields.
+  - Used to signal stores about some event (data received from server, user pressed key etc.).
+  - Known in classic Flux as *actions*.
+- **Actions** are self-contained asynchronous functions for a concrete task (create post, logout user etc.).
+  - Usually invoked by views, other actions or events from the environment.
+  - Subscribers are stores, other actions and views.
+  - When subscribed by stores, emitted payload MUST be a message.
+  - Can emit zero or more times per invocation.
+  - IO and side effects are permitted.
+  - You may think of actions as async
+  *action creators* from classic Flux, when subscribed by stores.
+- **Views** are React components.
+  - Should listen to stores for state changes.
+  - May listen to actions directly, without polluting the stores, when a short
+  feedback cycle is desired.
+  - *Subscriber view* is a special type of higher-order view component that automatically
+  subscribes to stores passed as props.
 
-There is no central dispatcher as in classic Flux -- stores subscribe directly to the actions they need.
+<br>
+There is no central dispatcher -- stores subscribe to the actions they need.
 
 ## Installation
 
 Install from npm:
 
 ```plain
-npm install fastflux
+npm install --save fastflux
 ```
 
-## Getting Started
+## Usage
 
-This introduction assumes familiarity with ES6 and React.
+These are ES6 examples.
 
-### Create your first store and action
+### Create store
 
 ```js
-import {createStore, createAction} from 'fastflux';
+import {createStore} from 'fastflux';
 
-// Define store
 let items = createStore({
   getInitialState() {return []},
 
@@ -74,8 +110,13 @@ let items = createStore({
 
   }
 });
+```
 
-// Define action
+### Create action
+
+```js
+import {createStore} from 'fastflux';
+
 let addItem = createAction(emit => text => {
   emit({type: "add", text})
 });
@@ -92,7 +133,7 @@ addItem.subscribe(items.send);
 items.subscribe(s => console.log("State of `items`:", s))
 
 // While we're at it, let's create some items
-["bar", "foobar", "baz"].forEach(addItem);
+;["bar", "foobar", "baz"].forEach(addItem)
 ```
 
 Open the console, you will see something like this:
