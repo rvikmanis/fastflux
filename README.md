@@ -5,11 +5,15 @@
 
 - [Introduction](#introduction)
 - [Architecture overview](#architecture-overview)
+  - [Concepts](#concepts)
+  - [Goals](#goals)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Create store](#create-store)
   - [Create action](#create-action)
   - [Create components](#create-components)
+- [Tooling integration](#tooling-integration)
+  - [ES6 with Babel and webpack](#es6-with-babel-and-webpack)
 - [API Reference](http://rvikmanis.github.io/fastflux/identifiers.html)
 
 ## Introduction
@@ -53,6 +57,8 @@ How data flows in a typical Fastflux application:
 
 ![Data flow](http://s9.postimg.org/eexgjcn27/fastflux.png)
 
+### Concepts
+
 - **Stores** are state containers, coupled with one or more reducers.
 - **Reducers** -- pure functions describing the transformation of state in response to messages.
 - **Messages** -- plain objects identified by `type`, optionally containing data fields.
@@ -76,6 +82,18 @@ How data flows in a typical Fastflux application:
 <br>
 There is no central dispatcher -- stores subscribe to the actions they need.
 
+### Goals
+
+1. Readability comes first.
+2. *Experiment!*
+3. FRP at the core:
+  - everything is observable;
+  - ubiquitous functional transformations -- map, filter, reduce.
+4. Zero boilerplate.
+5. Small footprint.
+6. Sane, fully documented API.
+7. ES6 classes.
+
 ## Installation
 
 Install from npm:
@@ -87,6 +105,9 @@ npm install --save fastflux
 ## Usage
 
 These are ES6 examples.
+
+If you're not familiar with the tools required to
+run ES6, see [ES6 with Babel and webpack](#es6-with-babel-and-webpack).
 
 ### Create store
 
@@ -199,3 +220,70 @@ Assuming you have `<div id="mount"></div>` in your document body:
 import {render} from 'react-dom';
 render(rootComponent, document.querySelector("#mount"))
 ```
+
+## Tooling integration
+
+### ES6 with Babel and webpack
+
+Install toolchain from npm:
+
+```plain
+npm install webpack babel-loader babel-core \
+ babel-preset-es2015-loose babel-preset-react --save-dev
+```
+
+Create a file `webpack.config.js`:
+
+```js
+module.exports = {
+    entry: "./index.js",
+    output: {
+        filename: "bundle.js"
+    },
+    context: __dirname,
+    module: {
+        loaders: [{
+            test: /\.jsx?$/,
+            exclude: /(node_modules|bower_components)/,
+            loader: 'babel-loader',
+            query: {
+                presets: ['react', 'es2015-loose']
+            }
+        }]
+    },
+    resolve: {
+        extensions: ["", ".js", ".jsx"]
+    },
+};
+
+```
+
+Now to make sure it works, create a file `index.js` (the entry point):
+
+```js
+import {createAction} from 'fastflux';
+
+window.sayHello = createAction(emit => (text="Hello") => emit(text));
+window.sayHello.subscribe(greeting => console.log("Greeting:", greeting));
+```
+
+Run webpack:
+
+```plain
+./node_modules/.bin/webpack
+```
+
+`bundle.js` should contain compiled bundle
+with dependencies.
+
+Use in a web page like this:
+
+```html
+<script src="bundle.js"></script>
+```
+
+##### What next?
+
+- Run examples from the [Usage](#usage) section
+- [Explore the API](http://rvikmanis.github.io/fastflux/identifiers.html)
+- Check out the [Architecture overview](#architecture-overview)
