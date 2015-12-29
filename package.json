@@ -1,6 +1,6 @@
 {
   "name": "fastflux",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Message driven reactive state management",
   "keywords": [
     "flux",

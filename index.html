@@ -54,12 +54,20 @@
 <a href="https://www.npmjs.com/package/fastflux"><img src="https://img.shields.io/npm/dm/fastflux.svg?style=flat-square" alt="Downloads/month"></a></p>
 <ul>
 <li><a href="#introduction">Introduction</a></li>
-<li><a href="#architecture-overview">Architecture overview</a></li>
+<li><a href="#architecture-overview">Architecture overview</a><ul>
+<li><a href="#concepts">Concepts</a></li>
+<li><a href="#goals">Goals</a></li>
+</ul>
+</li>
 <li><a href="#installation">Installation</a></li>
 <li><a href="#usage">Usage</a><ul>
 <li><a href="#create-store">Create store</a></li>
 <li><a href="#create-action">Create action</a></li>
 <li><a href="#create-components">Create components</a></li>
+</ul>
+</li>
+<li><a href="#tooling-integration">Tooling integration</a><ul>
+<li><a href="#es6-with-babel-and-webpack">ES6 with Babel and webpack</a></li>
 </ul>
 </li>
 <li><a href="http://rvikmanis.github.io/fastflux/identifiers.html">API Reference</a></li>
@@ -94,6 +102,7 @@ you get more time to design and implement your application.</p>
 <h2 id="architecture-overview">Architecture overview</h2>
 <p>How data flows in a typical Fastflux application:</p>
 <p><img src="http://s9.postimg.org/eexgjcn27/fastflux.png" alt="Data flow"></p>
+<h3 id="concepts">Concepts</h3>
 <ul>
 <li><strong>Stores</strong> are state containers, coupled with one or more reducers.</li>
 <li><strong>Reducers</strong> -- pure functions describing the transformation of state in response to messages.</li>
@@ -123,11 +132,27 @@ subscribes to stores passed as props.</li>
 </ul>
 <p><br>
 There is no central dispatcher -- stores subscribe to the actions they need.</p>
+<h3 id="goals">Goals</h3>
+<ol>
+<li>Readability comes first.</li>
+<li><em>Experiment!</em></li>
+<li>FRP at the core:<ul>
+<li>everything is observable;</li>
+<li>ubiquitous functional transformations -- map, filter, reduce.</li>
+</ul>
+</li>
+<li>Zero boilerplate.</li>
+<li>Small footprint.</li>
+<li>Sane, fully documented API.</li>
+<li>ES6 classes.</li>
+</ol>
 <h2 id="installation">Installation</h2>
 <p>Install from npm:</p>
 <pre><code class="lang-plain language-js">npm install --save fastflux</code></pre>
 <h2 id="usage">Usage</h2>
 <p>These are ES6 examples.</p>
+<p>If you&apos;re not familiar with the tools required to
+run ES6, see <a href="#es6-with-babel-and-webpack">ES6 with Babel and webpack</a>.</p>
 <h3 id="create-store">Create store</h3>
 <pre><code class="lang-js language-js">import {createStore} from &apos;fastflux&apos;;
 
@@ -214,6 +239,49 @@ let rootComponent = &lt;ControllerView items={items}&gt;;</code></pre>
 <p>Assuming you have <code>&lt;div id=&quot;mount&quot;&gt;&lt;/div&gt;</code> in your document body:</p>
 <pre><code class="lang-js language-js">import {render} from &apos;react-dom&apos;;
 render(rootComponent, document.querySelector(&quot;#mount&quot;))</code></pre>
+<h2 id="tooling-integration">Tooling integration</h2>
+<h3 id="es6-with-babel-and-webpack">ES6 with Babel and webpack</h3>
+<p>Install toolchain from npm:</p>
+<pre><code class="lang-plain language-js">npm install webpack babel-loader babel-core \
+ babel-preset-es2015-loose babel-preset-react --save-dev</code></pre>
+<p>Create a file <code>webpack.config.js</code>:</p>
+<pre><code class="lang-js language-js">module.exports = {
+    entry: &quot;./index.js&quot;,
+    output: {
+        filename: &quot;bundle.js&quot;
+    },
+    context: __dirname,
+    module: {
+        loaders: [{
+            test: /\.jsx?$/,
+            exclude: /(node_modules|bower_components)/,
+            loader: &apos;babel-loader&apos;,
+            query: {
+                presets: [&apos;react&apos;, &apos;es2015-loose&apos;]
+            }
+        }]
+    },
+    resolve: {
+        extensions: [&quot;&quot;, &quot;.js&quot;, &quot;.jsx&quot;]
+    },
+};</code></pre>
+<p>Now to make sure it works, create a file <code>index.js</code> (the entry point):</p>
+<pre><code class="lang-js language-js">import {createAction} from &apos;fastflux&apos;;
+
+window.sayHello = createAction(emit =&gt; (text=&quot;Hello&quot;) =&gt; emit(text));
+window.sayHello.subscribe(greeting =&gt; console.log(&quot;Greeting:&quot;, greeting));</code></pre>
+<p>Run webpack:</p>
+<pre><code class="lang-plain language-js">./node_modules/.bin/webpack</code></pre>
+<p><code>bundle.js</code> should contain compiled bundle
+with dependencies.</p>
+<p>Use in a web page like this:</p>
+<pre><code class="lang-html language-js">&lt;script src=&quot;bundle.js&quot;&gt;&lt;/script&gt;</code></pre>
+<h5 id="what-next-">What next?</h5>
+<ul>
+<li>Run examples from the <a href="#usage">Usage</a> section</li>
+<li><a href="http://rvikmanis.github.io/fastflux/identifiers.html">Explore the API</a></li>
+<li>Check out the <a href="#architecture-overview">Architecture overview</a></li>
+</ul>
 </div>
 </div>
 
