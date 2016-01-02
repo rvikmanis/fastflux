@@ -1,9 +1,10 @@
 import Observable from './observable/base.js';
+import {assign} from '../utils/index.js';
 
 
 /**
  * Creates an observable function that
- * asynchronously invokes the nested inner function.
+ * invokes the nested inner function.
  *
  * The inner function may call `emit`.
  *
@@ -19,20 +20,13 @@ import Observable from './observable/base.js';
  * @returns {function}
  */
 export function createAction(getRunner) {
-  let observable = new Observable;
-
-  let runner = getRunner(payload => observable.emit(payload));
+  let runner = getRunner(payload => action.emit(payload))
   let action = (...args) => {
-    setTimeout(() => runner(...args))
-  };
+    runner(...args)
+  }
 
-  Object.defineProperties(action, {
-    subscribe: {value: callback => observable.subscribe(callback)},
-    unsubscribe: {value: callback => observable.unsubscribe(callback)},
-    map: {value: mapper => observable.map(mapper)},
-    filter: {value: predicate => observable.filter(predicate)},
-    reduce: {value: (accumulator, reducer) => observable.reduce(accumulator, reducer)}
-  });
+  action = assign(action, Observable.prototype)
+  action._listeners = []
 
   return action
 }

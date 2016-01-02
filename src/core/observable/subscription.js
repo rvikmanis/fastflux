@@ -50,6 +50,6 @@ export default class Subscription {
    * See {@link Observable#unsubscribe}
    */
   terminate() {
-    this.source.unsubscribe(this._subscriber);
+    this._source.unsubscribe(this._subscriber);
   }
 }
