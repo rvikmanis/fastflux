@@ -456,9 +456,27 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
+    "src/core/observable/state.js~observablestate#filter",
+    "class/src/core/observable/state.js~ObservableState.html#instance-method-filter",
+    "src/core/observable/state.js~ObservableState#filter",
+    "method"
+  ],
+  [
     "src/core/observable/state.js~observablestate#getstate",
     "class/src/core/observable/state.js~ObservableState.html#instance-method-getState",
     "src/core/observable/state.js~ObservableState#getState",
+    "method"
+  ],
+  [
+    "src/core/observable/state.js~observablestate#map",
+    "class/src/core/observable/state.js~ObservableState.html#instance-method-map",
+    "src/core/observable/state.js~ObservableState#map",
+    "method"
+  ],
+  [
+    "src/core/observable/state.js~observablestate#reduce",
+    "class/src/core/observable/state.js~ObservableState.html#instance-method-reduce",
+    "src/core/observable/state.js~ObservableState#reduce",
     "method"
   ],
   [

@@ -72,7 +72,7 @@
         
         
         <div data-ice="description"><p>Creates an observable function that
-asynchronously invokes the nested inner function.</p>
+invokes the nested inner function.</p>
 </div>
       </div>
     </td>
@@ -150,15 +150,15 @@ asynchronously invokes the nested inner function.</p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/core/action.js.html#lineNumber21">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/core/action.js.html#lineNumber22">source</a></span></span>
     </span>
   </h3>
 
-  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode" class="language-js">import {createAction} from &apos;<span><a href="file/src/core/action.js.html#lineNumber21">fastflux/core/action</a></span>&apos;</code></pre></div>
+  <div data-ice="importPath" class="import-path"><pre class="prettyprint"><code data-ice="importPathCode" class="language-js">import {createAction} from &apos;<span><a href="file/src/core/action.js.html#lineNumber22">fastflux/core/action</a></span>&apos;</code></pre></div>
   
   
   <div data-ice="description"><p>Creates an observable function that
-asynchronously invokes the nested inner function.</p>
+invokes the nested inner function.</p>
 <p>The inner function may call <code>emit</code>.</p>
 </div>
 
@@ -404,7 +404,7 @@ Label = createSubscriber(Label);
 React.render(&lt;Label text={text} /&gt;, mountPoint);
 
 // After 1 second change text to &quot;Bar&quot;
-setTimeout(() =&gt; text.setState(&quot;Bar&quot;), 1000);</code></pre>
+setTimeout(() =&gt; text.emit(&quot;Bar&quot;), 1000);</code></pre>
     </div>
 </div>
 

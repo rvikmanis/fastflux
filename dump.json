@@ -23,7 +23,7 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import Observable from './observable/base.js';\n\n\n/**\n * Creates an observable function that\n * asynchronously invokes the nested inner function.\n *\n * The inner function may call `emit`.\n *\n * @example\n * let mul = createAction(emit => function (x, y) {\n *   emit(x * y)\n * });\n * mul.subscribe(result => console.log(\"Result:\", result));\n *\n * //> Result: 25\n * mul(5, 5);\n * @param {function(emit: function): function} getRunner\n * @returns {function}\n */\nexport function createAction(getRunner) {\n  let observable = new Observable;\n\n  let runner = getRunner(payload => observable.emit(payload));\n  let action = (...args) => {\n    setTimeout(() => runner(...args))\n  };\n\n  Object.defineProperties(action, {\n    subscribe: {value: callback => observable.subscribe(callback)},\n    unsubscribe: {value: callback => observable.unsubscribe(callback)},\n    map: {value: mapper => observable.map(mapper)},\n    filter: {value: predicate => observable.filter(predicate)},\n    reduce: {value: (accumulator, reducer) => observable.reduce(accumulator, reducer)}\n  });\n\n  return action\n}\n"
+    "content": "import Observable from './observable/base.js';\nimport {assign} from '../utils/index.js';\n\n\n/**\n * Creates an observable function that\n * invokes the nested inner function.\n *\n * The inner function may call `emit`.\n *\n * @example\n * let mul = createAction(emit => function (x, y) {\n *   emit(x * y)\n * });\n * mul.subscribe(result => console.log(\"Result:\", result));\n *\n * //> Result: 25\n * mul(5, 5);\n * @param {function(emit: function): function} getRunner\n * @returns {function}\n */\nexport function createAction(getRunner) {\n  let runner = getRunner(payload => action.emit(payload))\n  let action = (...args) => {\n    runner(...args)\n  }\n\n  action = assign(action, Observable.prototype)\n  action._listeners = []\n\n  return action\n}\n"
   },
   {
     "__docId__": 2,
@@ -37,11 +37,11 @@
     "export": true,
     "importPath": "fastflux/core/action",
     "importStyle": "{createAction}",
-    "description": "Creates an observable function that\nasynchronously invokes the nested inner function.\n\nThe inner function may call `emit`.",
+    "description": "Creates an observable function that\ninvokes the nested inner function.\n\nThe inner function may call `emit`.",
     "examples": [
       "let mul = createAction(emit => function (x, y) {\n  emit(x * y)\n});\nmul.subscribe(result => console.log(\"Result:\", result));\n\n//> Result: 25\nmul(5, 5);"
     ],
-    "lineNumber": 21,
+    "lineNumber": 22,
     "unknown": [
       {
         "tagName": "@returns",
@@ -81,7 +81,7 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import ObservableState from './state';\nimport Subscription from './subscription';\n\n/**\n * @example\n * let ready = new Observable;\n * ready.subscribe(data => console.log(\"Received:\", data));\n *\n * ready.emit(\"Foo\");\n * //> Received: Foo\n */\nexport default class Observable<T> {\n\n  _listeners = [];\n\n  /**\n   * Register listener\n   * @param {function} listener\n   * @throws {Error} if `listener` is already subscribed to this observable\n   * @returns {Subscription}\n   */\n  subscribe(listener: (v: T) => void): void {\n    if (this._listeners.indexOf(listener) === -1) {\n      this._listeners.push(listener);\n      return new Subscription(this, listener);\n    }\n    else throw new Error(\"subscribe: cannot register twice\");\n  }\n\n  /**\n   * True if `listener` has subscribed to `this` observable\n   * @param {function} listener\n   * @returns {boolean}\n   */\n  hasSubscribed(listener: (v: T) => void): boolean {\n    return this._listeners.indexOf(listener) !== -1\n  }\n\n  /**\n   * Unregister listener\n   * @param {function} listener\n   * @throws {Error} if `listener` is not registered\n   */\n  unsubscribe(listener: (v: T) => void): void {\n    var idx = this._listeners.indexOf(listener);\n    if (idx !== -1)\n      this._listeners.splice(idx, 1);\n    else\n      throw new Error(\"unsubscribe: listener is not registered\");\n  }\n\n  /**\n   * Invoke each registered listener with `value`.\n   *\n   * **Note**: method returns immediately,\n   * but listeners will be called synchronously in subscription order\n\n   * @param {Any} value - argument will be passed to listeners\n   */\n  emit(value: T): void {\n    setTimeout(() => {\n\n      var len = this._listeners.length;\n      for (var i = 0; i < len; i++) {\n        this._listeners[i](value)\n      }\n\n    })\n  }\n\n  /**\n   * @example\n   * let x = new Observable;\n   * x.map(v => v * 2).subscribe(v => console.log(\"Value:\", v));\n   *\n   * x.emit(10);\n   * //> Value: 20\n   *\n   * @param {function(value: Any): Any} mapper - how to transform the emitted value\n   * @returns {Observable}\n   */\n  map(mapper: (p: T) => T): Observable<T> {\n    let mapped: Observable<T> = new Observable;\n    this.subscribe(p => {\n      mapped.emit(mapper(p));\n    });\n    return mapped\n  }\n\n  /**\n   * @example\n   * let numbers = new Observable;\n   * let even = numbers.filter(v => v % 2 === 0);\n   *\n   * numbers.subscribe(v => console.log(\"Any:\", v))\n   * even.subscribe(v => console.log(\"Even:\", v));\n   *\n   * numbers.emit(1);\n   * //> Any: 1\n\n   * numbers.emit(2);\n   * //> Any: 2\n   * //> Even: 2\n   *\n   * @param {function(value: Any): boolean} predicate\n   * @returns {Observable}\n   */\n  filter(predicate: (p: T) => boolean): Observable<T> {\n    let filtered: Observable<T> = new Observable;\n    this.subscribe(p => {\n      if (predicate(p)) filtered.emit(p)\n    });\n    return filtered\n  }\n\n  /**\n   * @example\n   * let emitter = new Observable;\n   * let sum = emitter.reduce(0, (a, v) => a + v);\n   *\n   * sum.subscribe(s => console.log(s));\n   *\n   * emitter.emit(10);\n   * //> 10\n   * emitter.emit(15);\n   * //> 25\n   *\n   * @param {Any} accumulator - initial state\n   * @param {function(accumulator: Any, value: Any): Any} reducer\n   * @returns {ObservableState}\n   */\n  reduce<R>(accumulator: R, reducer: (a: R, p: T) => R): ObservableState<R> {\n    let reduced: ObservableState<R> = new ObservableState(accumulator);\n    this.subscribe(p => {\n      reduced.getState(a => {\n        reduced.emit(reducer(a, p))\n      })\n    });\n    return reduced\n  }\n\n}\n"
+    "content": "import ObservableState from './state';\nimport Subscription from './subscription';\n\n/**\n * @example\n * let ready = new Observable;\n * ready.subscribe(data => console.log(\"Received:\", data));\n *\n * ready.emit(\"Foo\");\n * //> Received: Foo\n */\nexport default class Observable<T> {\n\n  _listeners = [];\n\n  /**\n   * Register listener\n   * @param {function} listener\n   * @throws {Error} if `listener` is already subscribed to this observable\n   * @returns {Subscription}\n   */\n  subscribe(listener: (v: T) => void): void {\n    if (this._listeners.indexOf(listener) === -1) {\n      this._listeners.push(listener);\n      return new Subscription(this, listener);\n    }\n    else throw new Error(\"subscribe: cannot register twice\");\n  }\n\n  /**\n   * True if `listener` has subscribed to `this` observable\n   * @param {function} listener\n   * @returns {boolean}\n   */\n  hasSubscribed(listener: (v: T) => void): boolean {\n    return this._listeners.indexOf(listener) !== -1\n  }\n\n  /**\n   * Unregister listener\n   * @param {function} listener\n   * @throws {Error} if `listener` is not registered\n   */\n  unsubscribe(listener: (v: T) => void): void {\n    var idx = this._listeners.indexOf(listener);\n    if (idx !== -1)\n      this._listeners.splice(idx, 1);\n    else\n      throw new Error(\"unsubscribe: listener is not registered\");\n  }\n\n  /**\n   * Invoke each registered listener with `value`.\n   * @param {Any} value - argument will be passed to listeners\n   */\n  emit(value: T): void {\n    var len = this._listeners.length;\n    for (var i = 0; i < len; i++) {\n      this._listeners[i](value)\n    }\n  }\n\n  /**\n   * @example\n   * let x = new Observable;\n   * x.map(v => v * 2).subscribe(v => console.log(\"Value:\", v));\n   *\n   * x.emit(10);\n   * //> Value: 20\n   *\n   * @param {function(value: Any): Any} mapper - how to transform the emitted value\n   * @returns {Observable}\n   */\n  map(mapper: (p: T) => T): Observable<T> {\n    let mapped: Observable<T> = new Observable;\n    this.subscribe(p => {\n      mapped.emit(mapper(p));\n    });\n    return mapped\n  }\n\n  /**\n   * @example\n   * let numbers = new Observable;\n   * let even = numbers.filter(v => v % 2 === 0);\n   *\n   * numbers.subscribe(v => console.log(\"Any:\", v))\n   * even.subscribe(v => console.log(\"Even:\", v));\n   *\n   * numbers.emit(1);\n   * //> Any: 1\n\n   * numbers.emit(2);\n   * //> Any: 2\n   * //> Even: 2\n   *\n   * @param {function(value: Any): boolean} predicate\n   * @returns {Observable}\n   */\n  filter(predicate: (p: T) => boolean): Observable<T> {\n    let filtered: Observable<T> = new Observable;\n    this.subscribe(p => {\n      if (predicate(p)) filtered.emit(p)\n    });\n    return filtered\n  }\n\n  /**\n   * @example\n   * let emitter = new Observable;\n   * let sum = emitter.reduce(0, (a, v) => a + v);\n   *\n   * sum.subscribe(s => console.log(s));\n   *\n   * emitter.emit(10);\n   * //> 10\n   * emitter.emit(15);\n   * //> 25\n   *\n   * @param {Any} accumulator - initial state\n   * @param {function(accumulator: Any, value: Any): Any} reducer\n   * @returns {ObservableState}\n   */\n  reduce<R>(accumulator: R, reducer: (a: R, p: T) => R): ObservableState<R> {\n    let reduced: ObservableState<R> = new ObservableState(accumulator);\n    this.subscribe(p => {\n      reduced.getState(a => {\n        reduced.emit(reducer(a, p))\n      })\n    });\n    return reduced\n  }\n\n}\n"
   },
   {
     "__docId__": 4,
@@ -230,8 +230,8 @@
     "memberof": "src/core/observable/base.js~Observable",
     "longname": "src/core/observable/base.js~Observable#emit",
     "access": null,
-    "description": "Invoke each registered listener with `value`.\n\n**Note**: method returns immediately,\nbut listeners will be called synchronously in subscription order",
-    "lineNumber": 60,
+    "description": "Invoke each registered listener with `value`.",
+    "lineNumber": 56,
     "params": [
       {
         "nullable": null,
@@ -259,7 +259,7 @@
     "examples": [
       "let x = new Observable;\nx.map(v => v * 2).subscribe(v => console.log(\"Value:\", v));\n\nx.emit(10);\n//> Value: 20"
     ],
-    "lineNumber": 82,
+    "lineNumber": 74,
     "unknown": [
       {
         "tagName": "@returns",
@@ -301,7 +301,7 @@
     "examples": [
       "let numbers = new Observable;\nlet even = numbers.filter(v => v % 2 === 0);\n\nnumbers.subscribe(v => console.log(\"Any:\", v))\neven.subscribe(v => console.log(\"Even:\", v));\n\nnumbers.emit(1);\n//> Any: 1\nnumbers.emit(2);\n//> Any: 2\n//> Even: 2"
     ],
-    "lineNumber": 108,
+    "lineNumber": 100,
     "unknown": [
       {
         "tagName": "@returns",
@@ -343,7 +343,7 @@
     "examples": [
       "let emitter = new Observable;\nlet sum = emitter.reduce(0, (a, v) => a + v);\n\nsum.subscribe(s => console.log(s));\n\nemitter.emit(10);\n//> 10\nemitter.emit(15);\n//> 25"
     ],
-    "lineNumber": 132,
+    "lineNumber": 124,
     "unknown": [
       {
         "tagName": "@returns",
@@ -406,7 +406,7 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import Observable from './base.js';\n\n\n/**\n * @example\n * let name = new ObservableState(\"Foo\");\n *\n * name.getData(initial => console.log(\"Initial:\", initial));\n * //> Initial: Foo\n *\n * name.subscribe(data => {\n *   console.log(\"Received:\", data);\n *   name.getState(currentState => assert(data === currentState))\n * });\n *\n * name.emit(\"Foobar\");\n * //> Received: Foobar\n *\n */\nexport default class ObservableState extends Observable {\n\n\n  /**\n   * @param {Any} initialState\n   */\n  constructor(initialState) {\n    super();\n    this._state = (initialState != null ? initialState : null)\n  }\n\n\n  /**\n   * Return current state or asynchronously invoke callback\n   *\n   * @example <caption>Without arguments - synchronous</caption>\n   * let name = new ObservableState(\"Guest\");\n   * let val = name.getState();\n   * assert(val === \"Guest\");\n   *\n   * @example <caption>With callback - asynchronous</caption>\n   * let name = new ObservableState(\"Guest\");\n   * let returnVal = name.getState(val => {\n   *   assert(val === \"Guest\")\n   * });\n   * assert(returnVal === undefined);\n   *\n   * @param {function} [callback]\n   * @returns {Any|undefined}\n   */\n  getState(callback) {\n    if (typeof callback === \"function\") {\n      setTimeout(() => callback(this._state));\n      return\n    }\n    return this._state\n  }\n\n\n  /**\n   * Same as {@link Observable#emit}, but sets\n   * current state to `value`\n   *\n   * @param {Any} value - new state\n   */\n  emit(value) {\n    this._state = value != null ? value : null;\n    super.emit(this._state);\n  }\n\n\n}\n"
+    "content": "import Observable from './base.js';\n\n\n/**\n * @example\n * let name = new ObservableState(\"Foo\");\n *\n * name.getData(initial => console.log(\"Initial:\", initial));\n * //> Initial: Foo\n *\n * name.subscribe(data => {\n *   console.log(\"Received:\", data);\n *   name.getState(currentState => assert(data === currentState))\n * });\n *\n * name.emit(\"Foobar\");\n * //> Received: Foobar\n *\n */\nexport default class ObservableState extends Observable {\n\n\n  /**\n   * @param {Any} initialState\n   */\n  constructor(initialState) {\n    super();\n    this._state = (initialState != null ? initialState : null)\n  }\n\n\n  /**\n   * Return current state or asynchronously invoke callback\n   *\n   * @example <caption>Without arguments - synchronous</caption>\n   * let name = new ObservableState(\"Guest\");\n   * let val = name.getState();\n   * assert(val === \"Guest\");\n   *\n   * @example <caption>With callback - asynchronous</caption>\n   * let name = new ObservableState(\"Guest\");\n   * let returnVal = name.getState(val => {\n   *   assert(val === \"Guest\")\n   * });\n   * assert(returnVal === undefined);\n   *\n   * @param {function} [callback]\n   * @returns {Any|undefined}\n   */\n  getState(callback) {\n    let state = this._state\n    if (typeof callback === \"function\") {\n      setTimeout(() => callback(state));\n      return\n    }\n    return state\n  }\n\n\n  /**\n   * Same as {@link Observable#emit}, but sets\n   * current state to `value` before emitting\n   *\n   * @param {Any} value - new state\n   */\n  emit(value) {\n    this._state = value != null ? value : null;\n    super.emit(this._state);\n  }\n\n\n  /**\n   * Same as {@link Observable#map}, but returns {@link ObservableState}\n   *\n   * @param {function(value: Any): Any} mapper - how to transform the emitted value\n   * @returns {ObservableState}\n   */\n  map(mapper) {\n    return super.reduce(mapper(this.getState()), (_, s) => mapper(s))\n  }\n\n\n  /**\n   * Same as {@link Observable#filter}, but returns {@link ObservableState}\n   *\n   * @param {function(value: Any): boolean} predicate\n   * @returns {ObservableState}\n   */\n  filter(predicate) {\n    let state = this.getState()\n    if (!predicate(state)) { state = null }\n    return super.filter(predicate).reduce(state, (_, s) => s)\n  }\n\n\n  /**\n   * Same as {@link Observable#reduce}, but starts with current state reduced\n   *\n   * @param {Any} accumulator - initial state\n   * @param {function(accumulator: Any, value: Any): Any} reducer\n   * @returns {ObservableState}\n   */\n  reduce(accumulator, reducer) {\n    return super.reduce(reducer(accumulator, this.getState()), reducer);\n  }\n\n\n}\n"
   },
   {
     "__docId__": 14,
@@ -526,8 +526,8 @@
     "memberof": "src/core/observable/state.js~ObservableState",
     "longname": "src/core/observable/state.js~ObservableState#emit",
     "access": null,
-    "description": "Same as {@link Observable#emit}, but sets\ncurrent state to `value`",
-    "lineNumber": 65,
+    "description": "Same as {@link Observable#emit}, but sets\ncurrent state to `value` before emitting",
+    "lineNumber": 66,
     "params": [
       {
         "nullable": null,
@@ -552,7 +552,7 @@
     "longname": "src/core/observable/state.js~ObservableState#_state",
     "access": null,
     "description": null,
-    "lineNumber": 66,
+    "lineNumber": 67,
     "undocument": true,
     "type": {
       "types": [
@@ -562,6 +562,133 @@
   },
   {
     "__docId__": 20,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "map",
+    "memberof": "src/core/observable/state.js~ObservableState",
+    "longname": "src/core/observable/state.js~ObservableState#map",
+    "access": null,
+    "description": "Same as {@link Observable#map}, but returns {@link ObservableState}",
+    "lineNumber": 78,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{ObservableState}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function(value: Any): Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "mapper",
+        "description": "how to transform the emitted value"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ObservableState"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 21,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "filter",
+    "memberof": "src/core/observable/state.js~ObservableState",
+    "longname": "src/core/observable/state.js~ObservableState#filter",
+    "access": null,
+    "description": "Same as {@link Observable#filter}, but returns {@link ObservableState}",
+    "lineNumber": 89,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{ObservableState}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "function(value: Any): boolean"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "predicate",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ObservableState"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 22,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "reduce",
+    "memberof": "src/core/observable/state.js~ObservableState",
+    "longname": "src/core/observable/state.js~ObservableState#reduce",
+    "access": null,
+    "description": "Same as {@link Observable#reduce}, but starts with current state reduced",
+    "lineNumber": 103,
+    "unknown": [
+      {
+        "tagName": "@returns",
+        "tagValue": "{ObservableState}"
+      }
+    ],
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "accumulator",
+        "description": "initial state"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "function(accumulator: Any, value: Any): Any"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "reducer",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ObservableState"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 23,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -571,10 +698,10 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import Observable from './base.js';\n\n/**\n * @example\n * let emitter = new Observable;\n * let log = (v) => console.log(\"Received:\", v);\n *\n * let subscription = new Subscription(emitter, log);\n * assert(!subscription.isActive());\n *\n * subscription.activate();\n * assert(subscription.isActive());\n *\n * subscription.terminate();\n * assert(!subscription.isActive());\n */\nexport default class Subscription {\n\n  /**\n   * @param {Observable} source\n   * @param {function} subscriber\n   */\n  constructor(source, subscriber) {\n    this._source = source;\n    this._subscriber = subscriber;\n  }\n\n  /**\n   * Equivalent to `source.hasSubscribed(subscriber)`\n   *\n   * See {@link Observable#hasSubscribed}\n   * @returns {boolean}\n   */\n  isActive() {\n    return this._source.hasSubscribed(this._subscriber);\n  }\n\n  /**\n   * Equivalent to `source.subscribe(subscriber)`\n   *\n   * See {@link Observable#subscribe}\n   */\n  activate() {\n    this._source.subscribe(this._subscriber);\n  }\n\n  /**\n   * Equivalent to `source.unsubscribe(subscriber)`\n   *\n   * See {@link Observable#unsubscribe}\n   */\n  terminate() {\n    this.source.unsubscribe(this._subscriber);\n  }\n}\n"
+    "content": "import Observable from './base.js';\n\n/**\n * @example\n * let emitter = new Observable;\n * let log = (v) => console.log(\"Received:\", v);\n *\n * let subscription = new Subscription(emitter, log);\n * assert(!subscription.isActive());\n *\n * subscription.activate();\n * assert(subscription.isActive());\n *\n * subscription.terminate();\n * assert(!subscription.isActive());\n */\nexport default class Subscription {\n\n  /**\n   * @param {Observable} source\n   * @param {function} subscriber\n   */\n  constructor(source, subscriber) {\n    this._source = source;\n    this._subscriber = subscriber;\n  }\n\n  /**\n   * Equivalent to `source.hasSubscribed(subscriber)`\n   *\n   * See {@link Observable#hasSubscribed}\n   * @returns {boolean}\n   */\n  isActive() {\n    return this._source.hasSubscribed(this._subscriber);\n  }\n\n  /**\n   * Equivalent to `source.subscribe(subscriber)`\n   *\n   * See {@link Observable#subscribe}\n   */\n  activate() {\n    this._source.subscribe(this._subscriber);\n  }\n\n  /**\n   * Equivalent to `source.unsubscribe(subscriber)`\n   *\n   * See {@link Observable#unsubscribe}\n   */\n  terminate() {\n    this._source.unsubscribe(this._subscriber);\n  }\n}\n"
   },
   {
-    "__docId__": 21,
+    "__docId__": 24,
     "kind": "class",
     "static": true,
     "variation": null,
@@ -593,7 +720,7 @@
     "interface": false
   },
   {
-    "__docId__": 22,
+    "__docId__": 25,
     "kind": "constructor",
     "static": false,
     "variation": null,
@@ -628,7 +755,7 @@
     "generator": false
   },
   {
-    "__docId__": 23,
+    "__docId__": 26,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -646,7 +773,7 @@
     }
   },
   {
-    "__docId__": 24,
+    "__docId__": 27,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -664,7 +791,7 @@
     }
   },
   {
-    "__docId__": 25,
+    "__docId__": 28,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -692,7 +819,7 @@
     "generator": false
   },
   {
-    "__docId__": 26,
+    "__docId__": 29,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -706,7 +833,7 @@
     "generator": false
   },
   {
-    "__docId__": 27,
+    "__docId__": 30,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -720,7 +847,7 @@
     "generator": false
   },
   {
-    "__docId__": 28,
+    "__docId__": 31,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -733,7 +860,7 @@
     "content": "import ObservableState from './observable/state.js';\n\n\n/**\n * Container for application state and logic.\n *\n * *This class is abstract and cannot be instantiated.*\n *\n * ## Implementing\n * A store:\n *  1. Must have instance method `getInitialState` with signature:\n *\n *         function(): Any<S>\n *\n *  2. Must have either one of:\n *     * static method `reducer` with signature:\n *\n *           function(state: Any<S>, message: Message): Any<S>\n *\n *     * static property `reducers` with signature:\n *\n *           {[string]: function(state: Any<S>, message: Message): Any<S>}\n *\n *\n * #### Single reducer variant:\n *\n *     let logger = new class extends Store {\n *       getInitialState() { return [] }\n *       static reducer(state, {type, value}) {\n *\n *         if (type === \"add\") {}\n *           return state.concat([value]);\n *         }\n *\n *       }\n *     }\n *\n *\n * #### Object mapping {@link Message}#type to reducers:\n *\n *     let logger = new class extends Store {\n *       getInitialState() { return [] }\n *       static reducers = {\n *\n *          add(state, {value}) {\n *            return state.concat([value])\n *          }\n *\n *       }\n *     }\n *\n * > **Note:** you can also create a store  with {@link createStore}.\n *\n * -----------\n * @example\n * let counter = new class extends Store {\n *   getInitialState() { return 0 }\n *   static reducers = {\n *     inc(state, {amount}) { return state + amount; },\n *     dec(state, {amount}) { return state - amount; }\n *   }\n * }\n *\n * function increment(amount=1) {\n *   counter.send({type: \"inc\", amount})\n * }\n *\n * function decrement(amount=1) {\n *   counter.send({type: \"dec\", amount})\n * }\n *\n * counter.subscribe(n => console.log(\"Counter value:\", n));\n *\n * increment(); //> Counter value: 1\n * increment(); //> Counter value: 2\n * increment(2); //> Counter value: 4\n *\n * decrement(12); //> Counter value: -8\n */\nexport class Store extends ObservableState {\n\n\n  /**\n   * @throws {Error} when trying to instantiate the abstract {@link Store} directly\n   * @throws {Error} when no reducers are defined\n   * @throws {Error} when `getInitialState` is not implemented\n   */\n  constructor() {\n    super();\n\n    if (this.constructor === Store)\n      throw new Error(\"Store is abstract: extend or call createStore\");\n\n    let reducers = this.constructor.reducers || this.constructor.reducer;\n    let initialState = this.getInitialState();\n\n    if (typeof reducers !== \"object\" && typeof reducers !== \"function\")\n      throw new Error(\"Expecting \" +\n          \"reducer function or object mapping message types -> reducer functions \" +\n          \"in static property reducers\");\n\n    this._reducers = reducers;\n    this._state = initialState;\n\n    this._isProcessing = false;\n\n    const send = this.send;\n    this.send = (message, context) => send.call(this, message, context)\n  }\n\n\n  /**\n   * @abstract\n   * @returns {Any}\n   */\n  getInitialState() {\n    throw new Error(\"Not implemented\");\n  }\n\n\n  /**\n   * Send a message. Bound method\n   * @method\n   * @param {Message} message\n   * @param {Any} [context]\n   */\n  send(message, context) {\n    while (true) {\n      if (!this._isProcessing) break\n    }\n    this._process(message, context)\n  }\n\n  _process(message, context) {\n    this._isProcessing = true;\n\n    let reducer;\n    if (typeof this._reducers === \"object\") {\n      if (!this._reducers.hasOwnProperty(message.type)) {\n        this._isProcessing = false;\n        return\n      }\n      reducer = this._reducers[message.type];\n    }\n    else reducer = this._reducers;\n\n    let oldState = this.getState();\n    let newState = reducer(\n      oldState,\n      message,\n      context != null ? context : null\n    );\n\n    if (newState != null &&\n        typeof newState.equals === \"function\" &&\n        newState.equals(oldState)\n    ) {\n      this._isProcessing = false;\n      return\n    }\n\n\n    if (newState !== void 0) {\n      super.emit(newState);\n    }\n\n    this._isProcessing = false\n  }\n\n  /**\n   * @ignore\n   */\n  emit() {\n    throw new Error(\"Disabled\");\n  }\n\n\n}\n\n\n/**\n * Dynamically extends {@link Store} and instantiates the new class.\n *\n * `options.getInitialState` and either `options.reducer` or `options.reducers` are required.<br />\n * When both are defined, `options.reducers` takes precedence.<br />\n * Type requirements are interchangable, meaning either can\n * take {@link Object} or {@link function}.\n * @example\n * let counter = createStore({\n *   getInitialState() { return 0 },\n *   reducers: {\n *     inc(state) { return ++state },\n *     dec(state) { return --state }\n *   }\n * })\n * @param {Object} options\n * @param {function(): Any<S>} options.getInitialState\n * @param {function(state: Any<S>, message: Message): Any<S>} options.reducer\n * @param {Object} options.reducers - maps {@link Message}#type to reducers\n * @returns {Store}\n */\nexport function createStore({getInitialState, reducer, reducers} = {}) {\n\n  if (reducers == null) {\n    reducers = reducer\n  }\n\n  let _s = class extends Store {}\n\n  if (getInitialState != null)\n    _s.prototype.getInitialState = getInitialState;\n\n  if (reducers != null)\n    _s.reducers = reducers;\n\n  return new _s;\n\n}\n"
   },
   {
-    "__docId__": 29,
+    "__docId__": 32,
     "kind": "class",
     "static": true,
     "variation": null,
@@ -755,7 +882,7 @@
     ]
   },
   {
-    "__docId__": 30,
+    "__docId__": 33,
     "kind": "constructor",
     "static": false,
     "variation": null,
@@ -789,7 +916,7 @@
     "generator": false
   },
   {
-    "__docId__": 31,
+    "__docId__": 34,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -807,7 +934,7 @@
     }
   },
   {
-    "__docId__": 32,
+    "__docId__": 35,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -825,7 +952,7 @@
     }
   },
   {
-    "__docId__": 33,
+    "__docId__": 36,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -843,7 +970,7 @@
     }
   },
   {
-    "__docId__": 34,
+    "__docId__": 37,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -861,7 +988,7 @@
     }
   },
   {
-    "__docId__": 35,
+    "__docId__": 38,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -890,7 +1017,7 @@
     "generator": false
   },
   {
-    "__docId__": 36,
+    "__docId__": 39,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -931,7 +1058,7 @@
     "generator": false
   },
   {
-    "__docId__": 37,
+    "__docId__": 40,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -959,7 +1086,7 @@
     "generator": false
   },
   {
-    "__docId__": 38,
+    "__docId__": 41,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -977,7 +1104,7 @@
     }
   },
   {
-    "__docId__": 39,
+    "__docId__": 42,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -995,7 +1122,7 @@
     }
   },
   {
-    "__docId__": 40,
+    "__docId__": 43,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -1013,7 +1140,7 @@
     }
   },
   {
-    "__docId__": 41,
+    "__docId__": 44,
     "kind": "member",
     "static": false,
     "variation": null,
@@ -1031,7 +1158,7 @@
     }
   },
   {
-    "__docId__": 42,
+    "__docId__": 45,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -1046,7 +1173,7 @@
     "generator": false
   },
   {
-    "__docId__": 43,
+    "__docId__": 46,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1121,7 +1248,7 @@
     "generator": false
   },
   {
-    "__docId__": 44,
+    "__docId__": 47,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -1131,10 +1258,10 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import {isObservableState, assign} from '../utils/index.js';\nimport {Component, createElement} from 'react';\nimport ObservableState from './observable/state.js';\n\n\n/**\n * Higher-order component that automatically subscribes to\n * {@link ObservableState} props.\n *\n * @example\n * let text = new ObservableState(\"Foo\");\n *\n * class Label extends React.Component {\n *   render() {\n *     return <div>{this.props.text}</div>;\n *   }\n * }\n * Label = createSubscriber(Label);\n *\n * // Render <Label> with text \"Foo\"\n * React.render(<Label text={text} />, mountPoint);\n *\n * // After 1 second change text to \"Bar\"\n * setTimeout(() => text.setState(\"Bar\"), 1000);\n *\n * @param {React.Component} component - the component to wrap\n * @returns {React.Component}\n */\nexport function createSubscriber(component) {\n\n  let wrapper = function(props, context) {\n    Component.call(this, props, context);\n\n    this.normalProps = {};\n    this.observableProps = {};\n    this.updaters = {};\n\n    let state = {};\n\n    for (let k in this.props) {\n      let prop = this.props[k];\n      if (!isObservableState(prop)) this.normalProps[k] = prop;\n      else {\n        this.observableProps[k] = prop;\n        state[k] = prop.getState()\n      }\n    }\n\n    this.state = state;\n  };\n\n  wrapper.prototype = Object.create(Component.prototype, {\n\n    constructor: {value: wrapper},\n\n    componentWillMount: {value: function() {\n      for (let k in this.observableProps) {\n        let observable = this.observableProps[k];\n        let updater = this.updaters[k] = state => {\n          let updated = {};\n          updated[k] = state;\n          this.setState(updated);\n        };\n        observable.subscribe(updater);\n      }\n    }},\n\n    componentWillUnmount: {value: function() {\n      for (let k in this.updaters) {\n        this.observableProps[k].unsubscribe(this.updaters[k]);\n        delete this.updaters[k];\n      }\n    }},\n\n    componentWillReceiveProps: {value: function(nextProps) {\n      for (let k in this.observableProps) {\n        if (nextProps[k] !== this.observableProps[k])\n          throw new Error(\"Cannot change an observable state prop once initialized. \" +\n           \"To change the value, call setState\")\n      }\n      for (let k in this.normalProps) {\n        if (nextProps[k] === void 0) delete this.normalProps[k];\n      }\n      for (let k in nextProps) {\n        let prop = nextProps[k];\n        if (!(k in this.observableProps)) {\n          if (!isObservableState(prop)) this.normalProps[k] = prop;\n          else throw new Error(\"Cannot change non-observable prop to observable once initialized\")\n        }\n      }\n    }},\n\n    render: {value: function() {\n      return createElement(\n        component,\n        assign({}, this.normalProps, this.state)\n      )\n    }}\n\n  });\n\n  return wrapper;\n\n};\n"
+    "content": "import {isObservableState, assign} from '../utils/index.js';\nimport {Component, createElement} from 'react';\nimport ObservableState from './observable/state.js';\n\n\n/**\n * Higher-order component that automatically subscribes to\n * {@link ObservableState} props.\n *\n * @example\n * let text = new ObservableState(\"Foo\");\n *\n * class Label extends React.Component {\n *   render() {\n *     return <div>{this.props.text}</div>;\n *   }\n * }\n * Label = createSubscriber(Label);\n *\n * // Render <Label> with text \"Foo\"\n * React.render(<Label text={text} />, mountPoint);\n *\n * // After 1 second change text to \"Bar\"\n * setTimeout(() => text.emit(\"Bar\"), 1000);\n *\n * @param {React.Component} component - the component to wrap\n * @returns {React.Component}\n */\nexport function createSubscriber(component) {\n\n  let wrapper = function(props, context) {\n    Component.call(this, props, context);\n\n    this.normalProps = {};\n    this.observableProps = {};\n    this.updaters = {};\n\n    let state = {};\n\n    for (let k in this.props) {\n      let prop = this.props[k];\n      if (!isObservableState(prop)) this.normalProps[k] = prop;\n      else {\n        this.observableProps[k] = prop;\n        state[k] = prop.getState()\n      }\n    }\n\n    this.state = state;\n  };\n\n  wrapper.prototype = Object.create(Component.prototype, {\n\n    constructor: {value: wrapper},\n\n    componentWillMount: {value: function() {\n      for (let k in this.observableProps) {\n        let observable = this.observableProps[k];\n        let updater = this.updaters[k] = state => {\n          let updated = {};\n          updated[k] = state;\n          this.setState(updated);\n        };\n        observable.subscribe(updater);\n      }\n    }},\n\n    componentWillUnmount: {value: function() {\n      for (let k in this.updaters) {\n        this.observableProps[k].unsubscribe(this.updaters[k]);\n        delete this.updaters[k];\n      }\n    }},\n\n    componentWillReceiveProps: {value: function(nextProps) {\n      for (let k in this.observableProps) {\n        if (nextProps[k] !== this.observableProps[k])\n          throw new Error(\"Cannot change an observable state prop once initialized. \" +\n           \"To change the value, call setState\")\n      }\n      for (let k in this.normalProps) {\n        if (nextProps[k] === void 0) delete this.normalProps[k];\n      }\n      for (let k in nextProps) {\n        let prop = nextProps[k];\n        if (!(k in this.observableProps)) {\n          if (!isObservableState(prop)) this.normalProps[k] = prop;\n          else throw new Error(\"Cannot change non-observable prop to observable once initialized\")\n        }\n      }\n    }},\n\n    render: {value: function() {\n      return createElement(\n        component,\n        assign({}, this.normalProps, this.state)\n      )\n    }}\n\n  });\n\n  return wrapper;\n\n};\n"
   },
   {
-    "__docId__": 45,
+    "__docId__": 48,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1147,7 +1274,7 @@
     "importStyle": "{createSubscriber}",
     "description": "Higher-order component that automatically subscribes to\n{@link ObservableState} props.",
     "examples": [
-      "let text = new ObservableState(\"Foo\");\n\nclass Label extends React.Component {\n  render() {\n    return <div>{this.props.text}</div>;\n  }\n}\nLabel = createSubscriber(Label);\n\n// Render <Label> with text \"Foo\"\nReact.render(<Label text={text} />, mountPoint);\n\n// After 1 second change text to \"Bar\"\nsetTimeout(() => text.setState(\"Bar\"), 1000);"
+      "let text = new ObservableState(\"Foo\");\n\nclass Label extends React.Component {\n  render() {\n    return <div>{this.props.text}</div>;\n  }\n}\nLabel = createSubscriber(Label);\n\n// Render <Label> with text \"Foo\"\nReact.render(<Label text={text} />, mountPoint);\n\n// After 1 second change text to \"Bar\"\nsetTimeout(() => text.emit(\"Bar\"), 1000);"
     ],
     "lineNumber": 29,
     "unknown": [
@@ -1179,7 +1306,7 @@
     "generator": false
   },
   {
-    "__docId__": 46,
+    "__docId__": 49,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -1192,7 +1319,7 @@
     "content": "/**\n * @typedef {*} Any\n * @desc Describes any value\n */\n\n/**\n * @typedef {Object} Message\n * @property {string} type\n * @desc `Message` is a pure object type meeting the following criteria:\n *  * No methods;\n *  * Properties are either primitives\n      (numbers, strings, booleans etc.), {@link Array}s or pure {@link Object}s;\n *  * No circular references;\n *  * Has own property `Message#type` ({@link string})\n *\n * @example\n * let message = {\n *  type: \"something-descriptive\"\n * }\n */\n\n/**\n * @external {React.Component} https://www.npmjs.com/package/react\n */\n\nexport {Store, createStore} from './core/store';\nexport {Observable, ObservableState, Subscription} from './core/observable';\nexport {createSubscriber} from './core/subscriber';\nexport {createAction} from './core/action';\n"
   },
   {
-    "__docId__": 47,
+    "__docId__": 50,
     "kind": "typedef",
     "static": true,
     "variation": null,
@@ -1210,7 +1337,7 @@
     }
   },
   {
-    "__docId__": 48,
+    "__docId__": 51,
     "kind": "typedef",
     "static": true,
     "variation": null,
@@ -1243,7 +1370,7 @@
     }
   },
   {
-    "__docId__": 49,
+    "__docId__": 52,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1256,7 +1383,7 @@
     "lineNumber": 26
   },
   {
-    "__docId__": 50,
+    "__docId__": 53,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -1269,7 +1396,7 @@
     "content": "import assign from 'object-assign';\nexport {assign};\n\n/**\n * Shorthand for `assign({}, object)`\n * @param {Object} object\n * @returns {Object} cloned `object`\n * @ignore\n */\nexport function clone(object) {\n  return assign({}, object);\n}\n\n/**\n * True if `value.subscribe` and `value.unsubscribe` are methods\n * @function\n * @param {Any} value\n * @returns {boolean}\n * @ignore\n */\nexport function isObservable(value) {\n  return value != null &&\n   typeof value.subscribe === 'function' &&\n   typeof value.unsubscribe === 'function'\n}\n\n/**\n * True if {@link isObservable}(`value`) and `value.getState` is a method\n * @function\n * @param {Any} value\n * @returns {boolean}\n * @ignore\n */\nexport function isObservableState(value) {\n  return isObservable(value) &&\n   typeof value.getState === 'function'\n}\n"
   },
   {
-    "__docId__": 51,
+    "__docId__": 54,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1312,7 +1439,7 @@
     "generator": false
   },
   {
-    "__docId__": 52,
+    "__docId__": 55,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1359,7 +1486,7 @@
     "generator": false
   },
   {
-    "__docId__": 53,
+    "__docId__": 56,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1406,7 +1533,7 @@
     "generator": false
   },
   {
-    "__docId__": 55,
+    "__docId__": 58,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1419,7 +1546,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 56,
+    "__docId__": 59,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1432,7 +1559,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 57,
+    "__docId__": 60,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1445,7 +1572,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 58,
+    "__docId__": 61,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1458,7 +1585,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 59,
+    "__docId__": 62,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1471,7 +1598,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 60,
+    "__docId__": 63,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1484,7 +1611,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 61,
+    "__docId__": 64,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1497,7 +1624,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 62,
+    "__docId__": 65,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1510,7 +1637,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 63,
+    "__docId__": 66,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1523,7 +1650,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 64,
+    "__docId__": 67,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1536,7 +1663,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 65,
+    "__docId__": 68,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1549,7 +1676,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 66,
+    "__docId__": 69,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1562,7 +1689,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 67,
+    "__docId__": 70,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1575,7 +1702,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 68,
+    "__docId__": 71,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1588,7 +1715,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 69,
+    "__docId__": 72,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1601,7 +1728,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 70,
+    "__docId__": 73,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1614,7 +1741,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 71,
+    "__docId__": 74,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1627,7 +1754,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 75,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1640,7 +1767,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 73,
+    "__docId__": 76,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1653,7 +1780,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 74,
+    "__docId__": 77,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1666,7 +1793,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 75,
+    "__docId__": 78,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1679,7 +1806,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 76,
+    "__docId__": 79,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1692,7 +1819,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 77,
+    "__docId__": 80,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1705,7 +1832,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 78,
+    "__docId__": 81,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1718,7 +1845,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 79,
+    "__docId__": 82,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1731,7 +1858,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 80,
+    "__docId__": 83,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1744,7 +1871,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 81,
+    "__docId__": 84,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1757,7 +1884,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 82,
+    "__docId__": 85,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1770,7 +1897,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 83,
+    "__docId__": 86,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1783,7 +1910,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 84,
+    "__docId__": 87,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1796,7 +1923,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 85,
+    "__docId__": 88,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1809,7 +1936,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 86,
+    "__docId__": 89,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1822,7 +1949,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 87,
+    "__docId__": 90,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1835,7 +1962,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 88,
+    "__docId__": 91,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1848,7 +1975,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 89,
+    "__docId__": 92,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1861,7 +1988,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 90,
+    "__docId__": 93,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1874,7 +2001,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 91,
+    "__docId__": 94,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1887,7 +2014,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 92,
+    "__docId__": 95,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1900,7 +2027,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 93,
+    "__docId__": 96,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1913,7 +2040,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 94,
+    "__docId__": 97,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1926,7 +2053,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 95,
+    "__docId__": 98,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1939,7 +2066,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 96,
+    "__docId__": 99,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1952,7 +2079,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 97,
+    "__docId__": 100,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1965,7 +2092,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 98,
+    "__docId__": 101,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1978,7 +2105,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 99,
+    "__docId__": 102,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1991,7 +2118,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 100,
+    "__docId__": 103,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2004,7 +2131,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 101,
+    "__docId__": 104,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2017,7 +2144,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 103,
+    "__docId__": 106,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2030,7 +2157,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 104,
+    "__docId__": 107,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2043,7 +2170,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 105,
+    "__docId__": 108,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2056,7 +2183,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 106,
+    "__docId__": 109,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2069,7 +2196,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 107,
+    "__docId__": 110,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2082,7 +2209,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 108,
+    "__docId__": 111,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2095,7 +2222,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 109,
+    "__docId__": 112,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2108,7 +2235,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 110,
+    "__docId__": 113,
     "kind": "external",
     "static": true,
     "variation": null,

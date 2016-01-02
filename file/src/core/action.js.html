@@ -51,11 +51,12 @@
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/core/action.js</h1>
 <pre class="line-numbers"><code class="language-js" data-ice="content">import Observable from &apos;./observable/base.js&apos;;
+import {assign} from &apos;../utils/index.js&apos;;
 
 
 /**
  * Creates an observable function that
- * asynchronously invokes the nested inner function.
+ * invokes the nested inner function.
  *
  * The inner function may call `emit`.
  *
@@ -71,20 +72,13 @@
  * @returns {function}
  */
 export function createAction(getRunner) {
-  let observable = new Observable;
-
-  let runner = getRunner(payload =&gt; observable.emit(payload));
+  let runner = getRunner(payload =&gt; action.emit(payload))
   let action = (...args) =&gt; {
-    setTimeout(() =&gt; runner(...args))
-  };
+    runner(...args)
+  }
 
-  Object.defineProperties(action, {
-    subscribe: {value: callback =&gt; observable.subscribe(callback)},
-    unsubscribe: {value: callback =&gt; observable.unsubscribe(callback)},
-    map: {value: mapper =&gt; observable.map(mapper)},
-    filter: {value: predicate =&gt; observable.filter(predicate)},
-    reduce: {value: (accumulator, reducer) =&gt; observable.reduce(accumulator, reducer)}
-  });
+  action = assign(action, Observable.prototype)
+  action._listeners = []
 
   return action
 }

@@ -103,21 +103,13 @@ export default class Observable&lt;T&gt; {
 
   /**
    * Invoke each registered listener with `value`.
-   *
-   * **Note**: method returns immediately,
-   * but listeners will be called synchronously in subscription order
-
    * @param {Any} value - argument will be passed to listeners
    */
   emit(value: T): void {
-    setTimeout(() =&gt; {
-
-      var len = this._listeners.length;
-      for (var i = 0; i &lt; len; i++) {
-        this._listeners[i](value)
-      }
-
-    })
+    var len = this._listeners.length;
+    for (var i = 0; i &lt; len; i++) {
+      this._listeners[i](value)
+    }
   }
 
   /**

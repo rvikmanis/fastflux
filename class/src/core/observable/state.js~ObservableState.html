@@ -162,7 +162,33 @@ name.emit(&quot;Foobar&quot;);
         
         
         <div data-ice="description"><p>Same as <span><a href="class/src/core/observable/base.js~Observable.html#instance-method-emit">Observable#emit</a></span>, but sets
-current state to <code>value</code></p>
+current state to <code>value</code> before emitting</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+           <span data-ice="name"><span><a href="class/src/core/observable/state.js~ObservableState.html#instance-method-filter">filter</a></span></span><span data-ice="signature">(predicate: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>): <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Same as <span><a href="class/src/core/observable/base.js~Observable.html#instance-method-filter">Observable#filter</a></span>, but returns <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></p>
 </div>
       </div>
     </td>
@@ -189,6 +215,58 @@ current state to <code>value</code></p>
         
         
         <div data-ice="description"><p>Return current state or asynchronously invoke callback</p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+           <span data-ice="name"><span><a href="class/src/core/observable/state.js~ObservableState.html#instance-method-map">map</a></span></span><span data-ice="signature">(mapper: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span>): <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Same as <span><a href="class/src/core/observable/base.js~Observable.html#instance-method-map">Observable#map</a></span>, but returns <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></p>
+</div>
+      </div>
+    </td>
+    <td>
+      
+      
+    </td>
+  </tr>
+<tr data-ice="target">
+    <td>
+      <span class="access" data-ice="access">public</span>
+      
+      
+      
+      <span class="override" data-ice="override"></span>
+    </td>
+    <td>
+      <div>
+        <p>
+           <span data-ice="name"><span><a href="class/src/core/observable/state.js~ObservableState.html#instance-method-reduce">reduce</a></span></span><span data-ice="signature">(accumulator: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>, reducer: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(accumulator: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>, value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span>): <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span>
+        </p>
+      </div>
+      <div>
+        
+        
+        <div data-ice="description"><p>Same as <span><a href="class/src/core/observable/base.js~Observable.html#instance-method-reduce">Observable#reduce</a></span>, but starts with current state reduced</p>
 </div>
       </div>
     </td>
@@ -463,7 +541,7 @@ current state to <code>value</code></p>
     <span class="right-info">
       
       
-      <span data-ice="source"><span><a href="file/src/core/observable/state.js.html#lineNumber65">source</a></span></span>
+      <span data-ice="source"><span><a href="file/src/core/observable/state.js.html#lineNumber66">source</a></span></span>
     </span>
   </h3>
 
@@ -471,7 +549,7 @@ current state to <code>value</code></p>
   
   
   <div data-ice="description"><p>Same as <span><a href="class/src/core/observable/base.js~Observable.html#instance-method-emit">Observable#emit</a></span>, but sets
-current state to <code>value</code></p>
+current state to <code>value</code> before emitting</p>
 </div>
 
   <div data-ice="override"><h4>Override:</h4><span><a href="class/src/core/observable/base.js~Observable.html#instance-method-emit">Observable#emit</a></span></div>
@@ -497,6 +575,73 @@ current state to <code>value</code></p>
 </div>
 
   
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-filter">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    <span data-ice="name">filter</span><span data-ice="signature">(predicate: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span>): <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/core/observable/state.js.html#lineNumber89">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Same as <span><a href="class/src/core/observable/base.js~Observable.html#instance-method-filter">Observable#filter</a></span>, but returns <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></p>
+</div>
+
+  <div data-ice="override"><h4>Override:</h4><span><a href="class/src/core/observable/base.js~Observable.html#instance-method-filter">Observable#filter</a></span></div>
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" data-depth="0">predicate</td>
+      <td data-ice="type"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></span></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"></td>
+    </tr>
+</tbody>
+  </table>
+</div>
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tr>
+        <td class="return-type" data-ice="returnType"><span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></td>
+        
+      </tr>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
 
   
 
@@ -589,6 +734,148 @@ let returnVal = name.getState(val =&gt; {
 assert(returnVal === undefined);</code></pre>
     </div>
 </div>
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-map">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    <span data-ice="name">map</span><span data-ice="signature">(mapper: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span>): <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/core/observable/state.js.html#lineNumber78">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Same as <span><a href="class/src/core/observable/base.js~Observable.html#instance-method-map">Observable#map</a></span>, but returns <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></p>
+</div>
+
+  <div data-ice="override"><h4>Override:</h4><span><a href="class/src/core/observable/base.js~Observable.html#instance-method-map">Observable#map</a></span></div>
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" data-depth="0">mapper</td>
+      <td data-ice="type"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>how to transform the emitted value</p>
+</td>
+    </tr>
+</tbody>
+  </table>
+</div>
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tr>
+        <td class="return-type" data-ice="returnType"><span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></td>
+        
+      </tr>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+</div>
+<div class="detail" data-ice="detail">
+  <h3 data-ice="anchor" id="instance-method-reduce">
+    <span class="access" data-ice="access">public</span>
+    
+    
+    
+    
+    <span data-ice="name">reduce</span><span data-ice="signature">(accumulator: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>, reducer: <span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(accumulator: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>, value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span>): <span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></span>
+    <span class="right-info">
+      
+      
+      <span data-ice="source"><span><a href="file/src/core/observable/state.js.html#lineNumber103">source</a></span></span>
+    </span>
+  </h3>
+
+  
+  
+  
+  <div data-ice="description"><p>Same as <span><a href="class/src/core/observable/base.js~Observable.html#instance-method-reduce">Observable#reduce</a></span>, but starts with current state reduced</p>
+</div>
+
+  <div data-ice="override"><h4>Override:</h4><span><a href="class/src/core/observable/base.js~Observable.html#instance-method-reduce">Observable#reduce</a></span></div>
+
+  <div data-ice="properties"><div data-ice="properties">
+  <h4 data-ice="title">Params:</h4>
+  <table class="params">
+    <thead>
+    <tr><td>Name</td><td>Type</td><td>Attribute</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+    
+    <tr data-ice="property" data-depth="0">
+      <td data-ice="name" data-depth="0">accumulator</td>
+      <td data-ice="type"><span><a href="typedef/index.html#static-typedef-Any">Any</a></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"><p>initial state</p>
+</td>
+    </tr>
+<tr data-ice="property" data-depth="0">
+      <td data-ice="name" data-depth="0">reducer</td>
+      <td data-ice="type"><span><span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">function</a></span><span>(accumulator: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>, value: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span>)</span>: <span><a href="typedef/index.html#static-typedef-Any">Any</a></span></span></td>
+      <td data-ice="appendix"></td>
+      <td data-ice="description"></td>
+    </tr>
+</tbody>
+  </table>
+</div>
+</div>
+
+  <div class="return-params" data-ice="returnParams">
+    <h4>Return:</h4>
+    <table>
+      <tr>
+        <td class="return-type" data-ice="returnType"><span><a href="class/src/core/observable/state.js~ObservableState.html">ObservableState</a></span></td>
+        
+      </tr>
+    </table>
+    <div data-ice="returnProperties">
+</div>
+  </div>
+
+  
+
+  
+
+  
+
+  
 
   
 

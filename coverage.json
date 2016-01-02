@@ -1,7 +1,7 @@
 {
   "coverage": "100%",
-  "expectCount": 24,
-  "actualCount": 24,
+  "expectCount": 27,
+  "actualCount": 27,
   "files": {
     "src/core/observable/base.js": {
       "expectCount": 8,
@@ -9,8 +9,8 @@
       "undocumentLines": []
     },
     "src/core/observable/state.js": {
-      "expectCount": 4,
-      "actualCount": 4,
+      "expectCount": 7,
+      "actualCount": 7,
       "undocumentLines": []
     },
     "src/core/store.js": {

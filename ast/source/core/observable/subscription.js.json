@@ -1,7 +1,7 @@
 {
   "type": "Program",
   "start": 0,
-  "end": 1150,
+  "end": 1151,
   "loc": {
     "start": {
       "line": 1,
@@ -106,7 +106,7 @@
     {
       "type": "ExportDefaultDeclaration",
       "start": 369,
-      "end": 1149,
+      "end": 1150,
       "loc": {
         "start": {
           "line": 17,
@@ -120,7 +120,7 @@
       "declaration": {
         "type": "ClassDeclaration",
         "start": 384,
-        "end": 1149,
+        "end": 1150,
         "loc": {
           "start": {
             "line": 17,
@@ -152,7 +152,7 @@
         "body": {
           "type": "ClassBody",
           "start": 403,
-          "end": 1149,
+          "end": 1150,
           "loc": {
             "start": {
               "line": 17,
@@ -1058,7 +1058,7 @@
             {
               "type": "MethodDefinition",
               "start": 1083,
-              "end": 1147,
+              "end": 1148,
               "loc": {
                 "start": {
                   "line": 52,
@@ -1092,7 +1092,7 @@
               "value": {
                 "type": "FunctionExpression",
                 "start": 1092,
-                "end": 1147,
+                "end": 1148,
                 "loc": {
                   "start": {
                     "line": 52,
@@ -1111,7 +1111,7 @@
                 "body": {
                   "type": "BlockStatement",
                   "start": 1095,
-                  "end": 1147,
+                  "end": 1148,
                   "loc": {
                     "start": {
                       "line": 52,
@@ -1126,7 +1126,7 @@
                     {
                       "type": "ExpressionStatement",
                       "start": 1101,
-                      "end": 1143,
+                      "end": 1144,
                       "loc": {
                         "start": {
                           "line": 53,
@@ -1134,13 +1134,13 @@
                         },
                         "end": {
                           "line": 53,
-                          "column": 46
+                          "column": 47
                         }
                       },
                       "expression": {
                         "type": "CallExpression",
                         "start": 1101,
-                        "end": 1142,
+                        "end": 1143,
                         "loc": {
                           "start": {
                             "line": 53,
@@ -1148,13 +1148,13 @@
                           },
                           "end": {
                             "line": 53,
-                            "column": 45
+                            "column": 46
                           }
                         },
                         "callee": {
                           "type": "MemberExpression",
                           "start": 1101,
-                          "end": 1124,
+                          "end": 1125,
                           "loc": {
                             "start": {
                               "line": 53,
@@ -1162,13 +1162,13 @@
                             },
                             "end": {
                               "line": 53,
-                              "column": 27
+                              "column": 28
                             }
                           },
                           "object": {
                             "type": "MemberExpression",
                             "start": 1101,
-                            "end": 1112,
+                            "end": 1113,
                             "loc": {
                               "start": {
                                 "line": 53,
@@ -1176,7 +1176,7 @@
                               },
                               "end": {
                                 "line": 53,
-                                "column": 15
+                                "column": 16
                               }
                             },
                             "object": {
@@ -1197,7 +1197,7 @@
                             "property": {
                               "type": "Identifier",
                               "start": 1106,
-                              "end": 1112,
+                              "end": 1113,
                               "loc": {
                                 "start": {
                                   "line": 53,
@@ -1205,25 +1205,25 @@
                                 },
                                 "end": {
                                   "line": 53,
-                                  "column": 15
+                                  "column": 16
                                 }
                               },
-                              "name": "source"
+                              "name": "_source"
                             },
                             "computed": false
                           },
                           "property": {
                             "type": "Identifier",
-                            "start": 1113,
-                            "end": 1124,
+                            "start": 1114,
+                            "end": 1125,
                             "loc": {
                               "start": {
                                 "line": 53,
-                                "column": 16
+                                "column": 17
                               },
                               "end": {
                                 "line": 53,
-                                "column": 27
+                                "column": 28
                               }
                             },
                             "name": "unsubscribe"
@@ -1233,45 +1233,45 @@
                         "arguments": [
                           {
                             "type": "MemberExpression",
-                            "start": 1125,
-                            "end": 1141,
+                            "start": 1126,
+                            "end": 1142,
                             "loc": {
                               "start": {
                                 "line": 53,
-                                "column": 28
+                                "column": 29
                               },
                               "end": {
                                 "line": 53,
-                                "column": 44
+                                "column": 45
                               }
                             },
                             "object": {
                               "type": "ThisExpression",
-                              "start": 1125,
-                              "end": 1129,
+                              "start": 1126,
+                              "end": 1130,
                               "loc": {
                                 "start": {
                                   "line": 53,
-                                  "column": 28
+                                  "column": 29
                                 },
                                 "end": {
                                   "line": 53,
-                                  "column": 32
+                                  "column": 33
                                 }
                               }
                             },
                             "property": {
                               "type": "Identifier",
-                              "start": 1130,
-                              "end": 1141,
+                              "start": 1131,
+                              "end": 1142,
                               "loc": {
                                 "start": {
                                   "line": 53,
-                                  "column": 33
+                                  "column": 34
                                 },
                                 "end": {
                                   "line": 53,
-                                  "column": 44
+                                  "column": 45
                                 }
                               },
                               "name": "_subscriber"

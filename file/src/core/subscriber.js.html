@@ -73,7 +73,7 @@ import ObservableState from &apos;./observable/state.js&apos;;
  * React.render(&lt;Label text={text} /&gt;, mountPoint);
  *
  * // After 1 second change text to &quot;Bar&quot;
- * setTimeout(() =&gt; text.setState(&quot;Bar&quot;), 1000);
+ * setTimeout(() =&gt; text.emit(&quot;Bar&quot;), 1000);
  *
  * @param {React.Component} component - the component to wrap
  * @returns {React.Component}

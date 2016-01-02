@@ -100,23 +100,60 @@ export default class ObservableState extends Observable {
    * @returns {Any|undefined}
    */
   getState(callback) {
+    let state = this._state
     if (typeof callback === &quot;function&quot;) {
-      setTimeout(() =&gt; callback(this._state));
+      setTimeout(() =&gt; callback(state));
       return
     }
-    return this._state
+    return state
   }
 
 
   /**
    * Same as {@link Observable#emit}, but sets
-   * current state to `value`
+   * current state to `value` before emitting
    *
    * @param {Any} value - new state
    */
   emit(value) {
     this._state = value != null ? value : null;
     super.emit(this._state);
+  }
+
+
+  /**
+   * Same as {@link Observable#map}, but returns {@link ObservableState}
+   *
+   * @param {function(value: Any): Any} mapper - how to transform the emitted value
+   * @returns {ObservableState}
+   */
+  map(mapper) {
+    return super.reduce(mapper(this.getState()), (_, s) =&gt; mapper(s))
+  }
+
+
+  /**
+   * Same as {@link Observable#filter}, but returns {@link ObservableState}
+   *
+   * @param {function(value: Any): boolean} predicate
+   * @returns {ObservableState}
+   */
+  filter(predicate) {
+    let state = this.getState()
+    if (!predicate(state)) { state = null }
+    return super.filter(predicate).reduce(state, (_, s) =&gt; s)
+  }
+
+
+  /**
+   * Same as {@link Observable#reduce}, but starts with current state reduced
+   *
+   * @param {Any} accumulator - initial state
+   * @param {function(accumulator: Any, value: Any): Any} reducer
+   * @returns {ObservableState}
+   */
+  reduce(accumulator, reducer) {
+    return super.reduce(reducer(accumulator, this.getState()), reducer);
   }
 
 
