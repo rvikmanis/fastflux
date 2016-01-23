@@ -1,29 +1,6 @@
-/**
- * @typedef {*} Any
- * @desc Describes any value
- */
+import Observable from './core/Observable.js';
+import createStore from './core/createStore.js';
+import createSubscriber from './core/createSubscriber.js';
+import subscribeAll from './core/subscribeAll.js';
 
-/**
- * @typedef {Object} Message
- * @property {string} type
- * @desc `Message` is a pure object type meeting the following criteria:
- *  * No methods;
- *  * Properties are either primitives
-      (numbers, strings, booleans etc.), {@link Array}s or pure {@link Object}s;
- *  * No circular references;
- *  * Has own property `Message#type` ({@link string})
- *
- * @example
- * let message = {
- *  type: "something-descriptive"
- * }
- */
-
-/**
- * @external {React.Component} https://www.npmjs.com/package/react
- */
-
-export {Store, createStore} from './core/store';
-export {Observable, ObservableState, Subscription} from './core/observable';
-export {createSubscriber} from './core/subscriber';
-export {createAction} from './core/action';
+export {Observable, createStore, createSubscriber, subscribeAll}

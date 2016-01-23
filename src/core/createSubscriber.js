@@ -1,32 +1,31 @@
-import {isObservableState, assign} from '../utils/index.js';
+import Observable from './Observable.js'
+import {assign} from './utils.js';
 import {Component, createElement} from 'react';
-import ObservableState from './observable/state.js';
 
 
 /**
- * Higher-order component that automatically subscribes to
- * {@link ObservableState} props.
+ * Higher-order React component, automatically subscribes to
+ * {@link Observable} props.
  *
  * @example
- * let text = new ObservableState("Foo");
+ * const text = Observable.stateful("Foo")
  *
- * class Label extends React.Component {
+ * const Label = createSubscriber(class extends React.Component {
  *   render() {
- *     return <div>{this.props.text}</div>;
+ *     return <div>{this.props.text}</div>
  *   }
- * }
- * Label = createSubscriber(Label);
+ * })
  *
  * // Render <Label> with text "Foo"
- * React.render(<Label text={text} />, mountPoint);
+ * ReactDOM.render(<Label text={text} />, mountPoint)
  *
  * // After 1 second change text to "Bar"
- * setTimeout(() => text.emit("Bar"), 1000);
+ * setTimeout(() => text.emit("Bar"), 1000)
  *
  * @param {React.Component} component - the component to wrap
  * @returns {React.Component}
  */
-export function createSubscriber(component) {
+export default function createSubscriber(component) {
 
   let wrapper = function(props, context) {
     Component.call(this, props, context);
@@ -39,7 +38,7 @@ export function createSubscriber(component) {
 
     for (let k in this.props) {
       let prop = this.props[k];
-      if (!isObservableState(prop)) this.normalProps[k] = prop;
+      if (!(prop instanceof Observable)) this.normalProps[k] = prop;
       else {
         this.observableProps[k] = prop;
         state[k] = prop.getState()
@@ -76,7 +75,7 @@ export function createSubscriber(component) {
       for (let k in this.observableProps) {
         if (nextProps[k] !== this.observableProps[k])
           throw new Error("Cannot change an observable state prop once initialized. " +
-           "To change the value, call setState")
+           "To change the value, call emit")
       }
       for (let k in this.normalProps) {
         if (nextProps[k] === void 0) delete this.normalProps[k];
@@ -84,7 +83,7 @@ export function createSubscriber(component) {
       for (let k in nextProps) {
         let prop = nextProps[k];
         if (!(k in this.observableProps)) {
-          if (!isObservableState(prop)) this.normalProps[k] = prop;
+          if (!(prop instanceof Observable)) this.normalProps[k] = prop;
           else throw new Error("Cannot change non-observable prop to observable once initialized")
         }
       }

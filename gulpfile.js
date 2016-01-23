@@ -2,15 +2,15 @@ var assign = require("object-assign");
 var gulp = require('gulp');
 var gutil = require("gulp-util");
 var babel = require('gulp-babel');
-var istanbul = require('gulp-istanbul');
+var istanbul = require('gulp-babel-istanbul');
 var jasmine = require('gulp-jasmine');
 var webpack = require("webpack");
 var del = require("del");
 var exec = require('child_process').exec;
+var mergeStream = require('merge-stream');
 var pkg = require('./package');
 
 var config = {
-  babel: require('./config/babel'),
   webpack: require("./config/webpack")
 };
 
@@ -21,7 +21,7 @@ gulp.task('clean:webpack', function(callback) {
 });
 
 gulp.task('clean:node', function (callback) {
-  del(['core', 'utils', 'index.js'], function() {
+  del(['core', 'index.js'], function() {
     callback()
   })
 });
@@ -42,7 +42,7 @@ gulp.task('clean', ['clean:node', 'clean:webpack', 'clean:test', 'clean:docs']);
 
 gulp.task('build:node', ['clean:node'], function () {
     return gulp.src(["src/**/*.js", "!src/browser/**/*"])
-        .pipe(babel(config.babel))
+        .pipe(babel())
         .pipe(gulp.dest("."))
 });
 
@@ -68,15 +68,18 @@ gulp.task("watch", ["build"], function () {
     gulp.watch(["src/**/*"], ["build"]);
 });
 
-gulp.task('test:pre', ['build:node', 'clean:test'], function () {
-  return gulp.src(['core/*.js'])
-    .pipe(istanbul())
-    .pipe(istanbul.hookRequire());
-});
-
-gulp.task('test', ['test:pre'], function () {
-  return gulp.src('spec/**/*')
-   .pipe(jasmine({reporter: new (require('jasmine-spec-reporter'))}))
-   .pipe(istanbul.writeReports())
-   .pipe(istanbul.enforceThresholds({ thresholds: { global: 80 } }));
+gulp.task('test', ['clean:test'], function (cb) {
+  mergeStream(
+    gulp.src(["src/**/*.js", "!src/browser/**/*", "!src/index.js"])
+      .pipe(istanbul()),
+    gulp.src(['spec/**/*.js'])
+      .pipe(babel())
+  ).pipe(istanbul.hookRequire())
+    .on('finish', function () {
+      gulp.src(['spec/**/*.js'])
+       .pipe(jasmine({reporter: new (require('jasmine-spec-reporter'))}))
+       .pipe(istanbul.writeReports()) // Creating the reports after tests ran
+       //.pipe(istanbul.enforceThresholds({ thresholds: { global: 90 } })) // Enforce a coverage of at least 90%
+       .on('end', cb);
+    });
 });

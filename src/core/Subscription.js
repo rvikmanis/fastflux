@@ -1,18 +1,19 @@
-import Observable from './base.js';
+
 
 /**
+ * Subscription reference, returned by {@link Observable#subscribe}.
+ *
+ * Use case: terminating anonymous subscriptions.
+ *
  * @example
  * let emitter = new Observable;
- * let log = (v) => console.log("Received:", v);
+ * let subscription = emitter.subscribe((v) => console.log("Received: v"))
  *
- * let subscription = new Subscription(emitter, log);
- * assert(!subscription.isActive());
- *
- * subscription.activate();
- * assert(subscription.isActive());
- *
- * subscription.terminate();
- * assert(!subscription.isActive());
+ * // Unsubscribing was impossible without having a reference to the listener...
+ * // until now
+ * if (subscription.isActive()) {
+ *   subscription.terminate()
+ * }
  */
 export default class Subscription {
 

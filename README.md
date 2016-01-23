@@ -10,9 +10,14 @@
   - [Goals](#goals)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Create store](#create-store)
-  - [Create action](#create-action)
-  - [Create components](#create-components)
+  - [Store](#create-store)
+  - [Actions](#create-actions)
+  - [Subscriber view](#create-component)
+- [Advanced topics](#advanced-topics)
+  - [Functional transformations](#functional-transformations)
+  - [Combining stores](#combining-stores)
+  - [Async actions and side effects](#async-actions-and-side-effects)
+  - [Reusable stores](#reusable-stores)
 - [Tooling integration](#tooling-integration)
   - [ES6 with Babel and webpack](#es6-with-babel-and-webpack)
 - [API Reference](http://rvikmanis.github.io/fastflux/identifiers.html)
@@ -60,40 +65,33 @@ How data flows in a typical Fastflux application:
 
 ### Concepts
 
-- **Stores** are state containers, coupled with one or more reducers.
-- **Reducers** -- pure functions describing the transformation of state in response to messages.
-- **Messages** -- plain objects identified by `type`, optionally containing data fields.
-  - Used to signal stores about some event (data received from server, user pressed key etc.).
+- **Stores** are state containers coupled with reducers.
+- **Reducers** -- pure functions describing the transformation of state in response to intents.
+- **Intents** -- objects identified by `type`, optionally containing data fields.
+  - Used to signal stores about some event (e.g. data received from server, user pressed key etc.).
   - Known in classic Flux as *actions*.
-- **Actions** are self-contained asynchronous functions for a concrete task (create post, logout user etc.).
-  - Usually invoked by views, other actions or events from the environment.
-  - Subscribers are stores, other actions and views.
-  - When subscribed by stores, emitted payload MUST be a message.
-  - Can emit zero or more times per invocation.
+- **Actions** are (possibly asynchronous) functions for a concrete task (e.g. create post, logout user etc.).
+  - Invoked by views or events from the environment.
+  - Dispatches intents directly to the stores or through a dispatcher.
+  - Can dispatch zero or more times per invocation.
   - IO and side effects are permitted.
-  - You may think of actions as async
-  *action creators* from classic Flux, when subscribed by stores.
+  - You may think of actions as *action creators* from classic Flux.
 - **Views** are React components.
   - Should listen to stores for state changes.
-  - May listen to actions directly, without polluting the stores, when a short
-  feedback cycle is desired.
-  - *Subscriber view* is a special type of higher-order view component that automatically
+  - *Subscriber view* is a type of higher-order view component, which automatically
   subscribes to stores passed as props.
-
-<br>
-There is no central dispatcher -- stores subscribe to the actions they need.
 
 ### Goals
 
-1. Readability comes first.
-2. *Experiment!*
-3. FRP at the core:
+- Readability comes first.
+- Experimentation.
+- FRP at the core:
   - everything is observable;
-  - ubiquitous functional transformations -- map, filter, reduce.
-4. Zero boilerplate.
-5. Small footprint.
-6. Sane, fully documented API.
-7. ES6 classes.
+  - ubiquitous functional transformations.
+- No boilerplate.
+- Small footprint.
+- Sane and well documented API.
+- ES6 classes.
 
 ## Installation
 
@@ -113,113 +111,57 @@ run ES6, see [ES6 with Babel and webpack](#es6-with-babel-and-webpack).
 ### Create store
 
 ```js
-import {createStore} from 'fastflux';
+import {Store} from 'fastflux'
 
-let items = createStore({
-  getInitialState() {return []},
+const INC = "INC"
+const RESET = "RESET"
 
-  reducers: {
-
-    add(state, {text}) {
-      return state.concat([text])
-    }
-
-  }
-});
-```
-
-### Create action
-
-```js
-import {createAction} from 'fastflux';
-
-let addItem = createAction(emit => text => {
-  emit({type: "add", text})
-});
-
-// Link action to store
-addItem.subscribe(items.send);
-
-```
-
-##### Setup logging
-
-```js
-// Log state over time
-items.subscribe(s => console.log("State of `items`:", s))
-
-// While we're at it, let's create some items
-;["bar", "foobar", "baz"].forEach(addItem)
-```
-
-Open the console, you will see something like this:
-
-```plain
-State of `items`: ["bar"]
-State of `items`: ["bar", "foobar"]
-State of `items`: ["bar", "foobar", "baz"]
-```
-
-### Create components
-
-```js
-import {createSubscriber} from 'fastflux';
-import {Component} from 'react';
-
-// Define input
-class ItemInput extends Component {
-
-  state = {value: ""};
-
-  onKeyDown = (e) => {
-    if (e.key === "Enter") {
-      // Invoke action
-      addItem(e.target.value);
-      this.clearValue();
-    }
-  };
-
-  onChange = (e) => {
-    this.setValue(e.target.value)
-  };
-
-  setValue = (value) => this.setState({value});
-  clearValue = () => this.setValue("");
-
-  render() {
-    return <input
-      type="text"
-      onKeyDown={this.onKeyDown}
-      onChange={this.onChange}
-      value={this.state.value}
-    />
-  }
-
+const InitialState = 0
+const Reducers = {
+  [INC]: times => times + 1,
+  [RESET]: () => InitialState
 }
 
-// Define root component
-function ControllerView(props) {
-  // `props.items` contains current state of the `items` store
-  let items = props.items.map(item => <li>{item}</li>);
-  return <div>
-    <ul>{items}</ul>
-    <ItemInput />
-  </div>;
-}
-
-// Subscriber observes stores passed in props:
-// When a store emits new state, subscriber updates wrapped component's prop.
-ControllerView = createSubscriber(ControllerView);
-let rootComponent = <ControllerView items={items}>;
+const timesClicked = new Store(Reducers, InitialState)
 ```
 
-##### Render
-
-Assuming you have `<div id="mount"></div>` in your document body:
+### Create actions
 
 ```js
-import {render} from 'react-dom';
-render(rootComponent, document.querySelector("#mount"))
+function inc() {
+  timesClicked.dispatch({type: INC})
+}
+
+function reset(e) {
+  e.preventDefault()
+  timesClicked.dispatch({type: RESET})
+}
+```
+
+### Create component
+
+```js
+import {createSubscriber} from 'fastflux'
+import {render} from 'react-dom'
+
+let ButtonClickCounter = createSubscriber(props =>
+  <div>
+    <div>Times clicked: {props.timesClicked}</div>
+    <div>
+      <button onClick={props.inc}>Click here!</button>
+      <a href="#" onClick={props.reset}>Reset</a>
+    </div>
+  </div>
+)
+
+render(
+  <ButtonClickCounter
+    timesClicked={timesClicked}
+    inc={inc}
+    reset={reset} />,
+  // Assuming <div id="mount"></div> in document body
+  document.querySelector("#mount")
+)
 ```
 
 ## Tooling integration
